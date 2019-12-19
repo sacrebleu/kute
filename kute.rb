@@ -45,6 +45,7 @@ end.parse!
 require_relative 'log'
 require_relative 'kubeconfig'
 require_relative 'nodes'
+require_relative 'node_report'
 
 # extract servers and endpoints
 context = KubeConfig.extract.values.select{|v| v['name'] == $settings[:cluster]}.first

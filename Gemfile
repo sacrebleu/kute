@@ -9,3 +9,6 @@ gem 'aws-sdk-iam', '~> 1.16'
 gem 'kubeclient', '~> 4.4'
 
 gem 'colorize',   '~> 0.8'
+
+gem 'rspec-core', '~> 3.9'
+gem 'rspec',      '~> 3.9'

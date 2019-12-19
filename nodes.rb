@@ -1,8 +1,9 @@
 # model for querying and rendering a view of a kubernetes cluster's nodes
-# TODO: region of node
+#
 #
 class Nodes
   COL_NODES   = 45
+  COL_REGION  = 15
   COL_PODS    = 10
   COL_VOLS    = 10
   COL_STATUS  = 10
@@ -12,6 +13,7 @@ class Nodes
 
   COLUMNS = [
     COL_NODES,
+    COL_REGION,
     COL_PODS,
     COL_VOLS,
     COL_STATUS,
@@ -65,12 +67,14 @@ class Nodes
     end
 
     @nodes ||= @client.get_nodes.map do |node|
-
       v_use = node.status[:volumesInUse]&.size || 0
+      labels = node.metadata.labels.to_h
+
       {
         name: node.metadata.name,
+        region: labels[:"failure-domain.beta.kubernetes.io/zone"],
         kubeletVersion: node.status[:nodeInfo][:kubeletVersion],
-        labels: node.metadata.labels.to_h,
+        labels: labels,
         taints: node.spec.taints&.map {|e| "#{e.key}=#{e.value}:#{e.effect}"},
         capacity: {
           ebs_volumes: node.status[:capacity][:"attachable-volumes-aws-ebs"],
@@ -95,74 +99,7 @@ class Nodes
 
   # render to output
   def render
-    output =  ""
-    output << render_line('Node', 'Pods', 'Volumes', 'Status', 'Taints', 'Affinity', 'Version')
-
-    nodes.each do |node| output << render_line(node[:name], pcap(node), vcap(node),
-                                               status(node), taints(node),affinity(node),  ver(node))
-    end
-
-    puts output
-  end
-
-  def render_line(*args)
-    s = ""
-    args.each_with_index do |entry, idx|
-      s << entry.rjust(COLUMNS[idx])
-    end
-    s << "\n"
-    s
-  end
-
-  def pcap(node)
-    res =  format("%d/%d", node[:pods], node[:capacity][:pods])
-    res = "* #{res}" if node[:pods].to_f / node[:capacity][:pods].to_f > 0.8
-    res
-  end
-
-  def vcap(node)
-    res = format("%d/%d", node[:volume_count], node[:capacity][:ebs_volumes])
-    res = "* #{res}" if node[:volume_count].to_f / node[:capacity][:ebs_volumes].to_f > 0.8
-    res
-  end
-
-  def status(node)
-    s = node[:status]
-    res = if s['Ready'] != 'True'
-      'X'
-    elsif s['MemoryPressure'] != 'False'
-      'Mem'
-    elsif s['DiskPressure'] != 'False'
-      'Dsk'
-    elsif s['PIDPressure'] != 'False'
-      'Pid'
-    else
-      'Ok'
-    end
-    res
-  end
-
-  def taints(node)
-    # pp node[:taints]
-
-    res = if node[:taints]&.any?{|s| s.start_with?('NodeWithImpaired') }
-            'Impaired'
-          elsif node[:taints]&.any?{|s| s.end_with?('PreferNoSchedule')}
-            'PrefNoSchedule'
-          elsif node[:taints]&.any?{|s| s.end_with?('NoSchedule')}
-            "NoSchedule"
-          else
-            ""
-          end
-    res
-  end
-
-  def affinity(node)
-    node[:labels][:'kubernetes.io/affinity'] || ''
-  end
-
-  def ver(node)
-    node[:kubeletVersion]
+    puts NodeReport.new(nodes).render
   end
 
 end
