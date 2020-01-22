@@ -42,8 +42,8 @@ class KubeConfig
         res[k]['cluster_name'] = k.split('/')[1]
         res[k]['server'] = s['cluster']['server']
         res[k]['region'] = eks_region(s['cluster']['server'])
-      else
-         Log.dump "Unknown context in", path.cyan, ":",  k.yellow
+      # else
+      #    Log.dump "Unknown context in", path.cyan, ":",  k.yellow
       end
     end
 

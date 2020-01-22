@@ -3,11 +3,15 @@
 
 require 'rubygems'
 
+require 'tty-color'
+require 'pastel'
 require 'aws-sdk-core'
 require 'aws-sdk-eks'
 require 'kubeclient'
-require 'colorize'
+require 'aws-sdk-ec2'
+require 'aws-sdk-cloudwatch'
 require 'fileutils'
+# require 'colorize' # TODO remove
 require 'optparse'
 require 'pp'
 
@@ -21,6 +25,8 @@ $settings[:profile] ||= 'default'
 # always preset to the current kubectx cluster
 $settings[:cluster] = `cat ${HOME}/.kube/config | grep current-context | cut -d ' ' -f2`.chomp
 $settings[:resource] = :nodes
+
+$pastel = Pastel.new
 
 OptionParser.new do |opts|
   opts.banner = 'Usage: kute.rb [options]'
@@ -43,9 +49,10 @@ OptionParser.new do |opts|
 end.parse!
 
 require_relative 'log'
-require_relative 'kubeconfig'
-require_relative 'nodes'
-require_relative 'node_report'
+require_relative 'cfg/kubeconfig'
+require_relative 'view/node_report'
+require_relative 'model/nodes'
+require_relative 'model/instance_mapper'
 
 # extract servers and endpoints
 context = KubeConfig.extract.values.select{|v| v['name'] == $settings[:cluster]}.first
@@ -59,19 +66,21 @@ endpoint = context['server']
 
 credentials = Aws::SharedCredentials.new(profile_name: $settings[:profile]).credentials
 
-# pp context
-
 auth_options = {
   bearer_token: Kubeclient::AmazonEksCredentials.token(credentials, $settings[:cluster_name] || context['cluster_name'])
 }
 
 ssl_options = { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
 
-Log.dump " profile:", $settings[:profile].cyan
-Log.dump " context:", context['name'].cyan
-Log.dump " cluster:", context['cluster'].cyan
-Log.dump "endpoint:", context['server'].green
+Log.dump " profile:", $pastel.cyan($settings[:profile])
+Log.dump " context:", $pastel.cyan(context['name'])
+Log.dump " cluster:", $pastel.cyan(context['cluster'])
+Log.dump "endpoint:", $pastel.green(context['server'])
 print "\n"
+
+cluster_name=context['name'].split('/')[1]
+
+instances = InstanceMapper.new(credentials, cluster_name)
 
 client = Kubeclient::Client.new(
   endpoint,
@@ -81,8 +90,9 @@ client = Kubeclient::Client.new(
 )
 
 case $settings[:resource]
-  when :nodes
-    Nodes.new(client).render
+when :nodes
+  nodes = Nodes.new(client).nodes
+  puts NodeReport.new(nodes, instances.instances).render
 end
 # pp client.get_nodes
 

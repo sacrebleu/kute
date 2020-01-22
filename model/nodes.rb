@@ -1,26 +1,26 @@
-# model for querying and rendering a view of a kubernetes cluster's nodes
+# model for querying and rendering a view of a kubernetes cluster's nodes.
 #
 #
 class Nodes
-  COL_NODES   = 45
-  COL_REGION  = 15
-  COL_PODS    = 10
-  COL_VOLS    = 10
-  COL_STATUS  = 10
-  COL_TAINTS  = 20
-  COL_VERSION = 22
-  COL_AFFINITY = 20
-
-  COLUMNS = [
-    COL_NODES,
-    COL_REGION,
-    COL_PODS,
-    COL_VOLS,
-    COL_STATUS,
-    COL_TAINTS,
-    COL_AFFINITY,
-    COL_VERSION
-  ]
+  # COL_NODES   = 45
+  # COL_REGION  = 15
+  # COL_PODS    = 10
+  # COL_VOLS    = 10
+  # COL_STATUS  = 10
+  # COL_TAINTS  = 20
+  # COL_VERSION = 22
+  # COL_AFFINITY = 20
+  #
+  # COLUMNS = [
+  #   COL_NODES,
+  #   COL_REGION,
+  #   COL_PODS,
+  #   COL_VOLS,
+  #   COL_STATUS,
+  #   COL_TAINTS,
+  #   COL_AFFINITY,
+  #   COL_VERSION
+  # ]
 
   def initialize(client, opts = {})
     @client = client
@@ -72,6 +72,7 @@ class Nodes
 
       {
         name: node.metadata.name,
+        age: node.metadata.creationTimestamp,
         region: labels[:"failure-domain.beta.kubernetes.io/zone"],
         kubeletVersion: node.status[:nodeInfo][:kubeletVersion],
         labels: labels,
@@ -96,10 +97,4 @@ class Nodes
       }
     end
   end
-
-  # render to output
-  def render
-    puts NodeReport.new(nodes).render
-  end
-
 end
