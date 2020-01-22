@@ -66,6 +66,8 @@ endpoint = context['server']
 
 credentials = Aws::SharedCredentials.new(profile_name: $settings[:profile]).credentials
 
+# pp context
+
 auth_options = {
   bearer_token: Kubeclient::AmazonEksCredentials.token(credentials, $settings[:cluster_name] || context['cluster_name'])
 }
