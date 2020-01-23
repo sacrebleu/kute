@@ -7,31 +7,6 @@ class Nodes
     @client = client
   end
 
-  # expects structure of type
-  # [{:type=>"MemoryPressure",
-  #   :status=>"False",
-  #   :lastHeartbeatTime=>"2019-12-18T17:25:40Z",
-  #   :lastTransitionTime=>"2019-11-26T13:56:45Z",
-  #   :reason=>"KubeletHasSufficientMemory",
-  #   :message=>"kubelet has sufficient memory available"},
-  #  {:type=>"DiskPressure",
-  #   :status=>"False",
-  #   :lastHeartbeatTime=>"2019-12-18T17:25:40Z",
-  #   :lastTransitionTime=>"2019-11-26T13:56:45Z",
-  #   :reason=>"KubeletHasNoDiskPressure",
-  #   :message=>"kubelet has no disk pressure"},
-  #  {:type=>"PIDPressure",
-  #   :status=>"False",
-  #   :lastHeartbeatTime=>"2019-12-18T17:25:40Z",
-  #   :lastTransitionTime=>"2019-11-26T13:56:45Z",
-  #   :reason=>"KubeletHasSufficientPID",
-  #   :message=>"kubelet has sufficient PID available"},
-  #  {:type=>"Ready",
-  #   :status=>"True",
-  #   :lastHeartbeatTime=>"2019-12-18T17:25:40Z",
-  #   :lastTransitionTime=>"2019-11-26T13:56:45Z",
-  #   :reason=>"KubeletReady",
-  #   :message=>"kubelet is posting ready status"}]
   def node_conditions(conds)
     res = {}
     conds.map{ |k| res[k.type] = k.status  }

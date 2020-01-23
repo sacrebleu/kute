@@ -4,6 +4,7 @@
 require 'rubygems'
 
 require 'tty-color'
+require 'tty-spinner'
 require 'pastel'
 require 'aws-sdk-core'
 require 'aws-sdk-eks'
@@ -25,6 +26,7 @@ $settings[:profile] ||= 'default'
 # always preset to the current kubectx cluster
 $settings[:cluster] = `cat ${HOME}/.kube/config | grep current-context | cut -d ' ' -f2`.chomp
 $settings[:resource] = :nodes
+$settings[:cloudwatch] = false
 
 $pastel = Pastel.new
 
@@ -45,6 +47,10 @@ OptionParser.new do |opts|
 
   opts.on('-c', '--cluster', 'Specify the cluster you wish to connect to') do |v|
     $settings[:cluster] = v
+  end
+
+  opts.on('-w', '--cloudwatch', 'Add additional cloudwatch derived metrics at the expense of speed') do |v|
+    $settings[:cloudwatch] = :enabled
   end
 end.parse!
 
@@ -82,7 +88,10 @@ print "\n"
 
 cluster_name=context['name'].split('/')[1]
 
-instances = InstanceMapper.new(credentials, cluster_name)
+spinner = TTY::Spinner.new("[:spinner] Collating EKS and Cloudwatch metrics ... ", hide_cursor: true, clear: true)
+spinner.auto_spin
+
+instances = InstanceMapper.new(credentials, cluster_name, $settings)
 
 client = Kubeclient::Client.new(
   endpoint,
@@ -94,7 +103,9 @@ client = Kubeclient::Client.new(
 case $settings[:resource]
 when :nodes
   nodes = Nodes.new(client).nodes
-  puts NodeReport.new(nodes, instances.instances).render
+  res = NodeReport.new(nodes, instances.instances).render
+  spinner.stop
+  puts res
 end
 # pp client.get_nodes
 

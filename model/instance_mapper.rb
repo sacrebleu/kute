@@ -1,15 +1,18 @@
 # frozen_string_literal: true
 
 class InstanceMapper
-  attr_reader :instances, :cloudwatch, :cluster_name, :starttime, :endtime, :period
+  attr_reader :cloudwatch, :instances, :cluster_name, :starttime, :endtime, :period
 
-  def initialize(credentials, cluster_name)
+  def initialize(credentials, cluster_name, settings)
     @cloudwatch ||= cw = Aws::CloudWatch::Client.new(credentials: credentials)
     @cluster_name = cluster_name
     @starttime = Time.now - 120
     @endtime   = Time.now
     @period = 60
+    @instances = load if settings[:cloudwatch]
+  end
 
+  def load
     ec2s = Aws::EC2::Client.new(credentials: credentials).describe_instances(
       filters: [{ name: "tag:kubernetes.io/cluster/#{cluster_name}", values: ['owned'] }]
     )
@@ -57,8 +60,7 @@ class InstanceMapper
         disk: dist.datapoints&.first&.average&.truncate(0) || 0
       } }
     end
-
-    @instances = instances.reduce({}, :merge)
+    instances.reduce({}, :merge)
   end
 
   def instance_cpu(instance_id, node_name)

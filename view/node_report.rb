@@ -70,9 +70,9 @@ class NodeReport
       @taints = node[:taints]
       @affinity = node[:labels][:'kubernetes.io/affinity'] || ''
       @version = node[:kubeletVersion]
-      @cpu = instance[:cpu]
-      @disk = instance[:disk]
-      @mem = instance[:memory]
+      @cpu = instance[:cpu] || 0
+      @disk = instance[:disk] || 0
+      @mem = instance[:memory] || 0
 
     end
 
@@ -209,7 +209,7 @@ class NodeReport
   end
 
   def initialize(nodes, instances)
-    @nodes = nodes.map { |node| Row.new(node, instances[node[:name]]) }
+    @nodes = nodes.map { |node| Row.new(node, instances ? instances[node[:name]] : {} )  }
     @summary = {
       current_pods: nodes.inject(0) { |sum, n| sum + n[:pods].to_i },
       max_pods: nodes.inject(0) { |sum, n| sum + n[:capacity][:pods].to_i },
@@ -230,7 +230,7 @@ class NodeReport
       [:version,  25],
       [:cpu,      4],
       [:mem,      4],
-      [:disk,     5],
+      [:disk,     5]
     ].map { |e| Column.new(*e) }.freeze
   end
 
