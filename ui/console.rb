@@ -48,17 +48,22 @@ module Ui
     # redraw the screen
     def refresh
       @buffer = Concurrent::Promises.future do
-        c = load_content
-        send(:spin_stop)
-        c_goto(0, 2)
-        c
+        begin
+          c = load_content
+          send(:spin_stop)
+          c_goto(0, 2)
+          c
+        rescue => e
+          puts e.message
+          puts e.backtrace.join("\n")
+        end
       end
 
       print cursor.clear_screen
       c_topleft
       send(:spin_start)
 
-      print @buffer.value(timeout=5)
+      print @buffer.value(timeout=15)
 
       c_bottomrighttext(render_refresh_time)
 
