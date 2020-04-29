@@ -19,3 +19,5 @@ gem 'rspec-core', '~> 3.9'
 gem 'pastel', git: 'https://github.com/piotrmurach/pastel'
 
 gem 'tty', git: 'https://github.com/sacrebleu/tty'
+
+gem 'concurrent-ruby', '~> 1.1'

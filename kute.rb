@@ -14,6 +14,8 @@ require 'aws-sdk-cloudwatch'
 require 'fileutils'
 # require 'colorize' # TODO remove
 require 'optparse'
+require 'concurrent-ruby'
+
 require 'pp'
 
 # rudimentary logger
@@ -56,7 +58,8 @@ end.parse!
 
 require_relative 'log'
 require_relative 'cfg/kubeconfig'
-require_relative 'view/node_report'
+require_relative 'ui/cards/nodes'
+require_relative 'ui/console'
 require_relative 'model/nodes'
 require_relative 'model/instance_mapper'
 
@@ -80,16 +83,16 @@ auth_options = {
 
 ssl_options = { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
 
-Log.dump " profile:", $pastel.cyan($settings[:profile])
-Log.dump " context:", $pastel.cyan(context['name'])
-Log.dump " cluster:", $pastel.cyan(context['cluster'])
-Log.dump "endpoint:", $pastel.green(context['server'])
-print "\n"
+# Log.dump " profile:", $pastel.cyan($settings[:profile])
+# Log.dump " context:", $pastel.cyan(context['name'])
+# Log.dump " cluster:", $pastel.cyan(context['cluster'])
+# Log.dump "endpoint:", $pastel.green(context['server'])
+# print "\n"
 
 cluster_name=context['name'].split('/')[1]
 
-spinner = TTY::Spinner.new("[:spinner] Collating EKS and Cloudwatch metrics ... ", hide_cursor: true, clear: true)
-spinner.auto_spin
+# spinner = TTY::Spinner.new("[:spinner] Collating EKS and Cloudwatch metrics ... ", hide_cursor: true, clear: true)
+# spinner.auto_spin
 
 instances = InstanceMapper.new(credentials, cluster_name, $settings)
 
@@ -100,13 +103,21 @@ client = Kubeclient::Client.new(
   ssl_options: ssl_options
 )
 
-case $settings[:resource]
-when :nodes
-  nodes = Nodes.new(client).nodes
-  res = NodeReport.new(nodes, instances.instances).render
-  spinner.stop
-  puts res
-end
-# pp client.get_nodes
+controller = Ui::Controller.new(context)
 
-puts "\n"
+# case $settings[:resource]
+# when :nodes
+#
+# model = Model::Nodes.new(client).nodes
+#
+# card = Ui::Cards::Nodes.new(client, instances)
+
+controller.nodes = Ui::Cards::Nodes.new(client, instances, context)
+
+controller.select(:nodes)
+
+  # spinner.stop
+  # puts res
+# end
+
+# puts "\n"

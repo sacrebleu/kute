@@ -8,7 +8,7 @@
 2. node details
 3. services
 4. ingresses
-5. config maps etc ?
+5. config maps etc 
 
 #### Overview
 

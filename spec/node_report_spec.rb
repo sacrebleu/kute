@@ -8,7 +8,7 @@ describe 'String Justification' do
 
   context 'when right justifying strings' do
     it 'pads correctly regardless of whether the string is colorized' do
-      c = NodeReport::Column.new("test", 40)
+      c = Nodes::Column.new("test", 40)
 
       t1 = "test string"
       t2 = t1.red

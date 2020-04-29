@@ -1,18 +1,21 @@
 # frozen_string_literal: true
 
 class InstanceMapper
-  attr_reader :cloudwatch, :instances, :cluster_name, :starttime, :endtime, :period
+  attr_reader :cloudwatch, :cluster_name, :starttime, :endtime, :period
 
   def initialize(credentials, cluster_name, settings)
-    @cloudwatch ||= cw = Aws::CloudWatch::Client.new(credentials: credentials)
+    @cloudwatch ||= Aws::CloudWatch::Client.new(credentials: credentials)
     @cluster_name = cluster_name
     @starttime = Time.now - 120
     @endtime   = Time.now
+    @enabled = settings[:cloudwatch]
     @period = 60
     @instances = load if settings[:cloudwatch]
   end
 
-  def load
+  def instances
+    return nil unless @enabled
+
     ec2s = Aws::EC2::Client.new(credentials: credentials).describe_instances(
       filters: [{ name: "tag:kubernetes.io/cluster/#{cluster_name}", values: ['owned'] }]
     )
