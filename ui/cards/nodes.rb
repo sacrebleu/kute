@@ -90,6 +90,10 @@ module Ui
           end
         end
 
+        def pod_occupancy_ratio
+          @pods[2]
+        end
+
         # render an ansi volume occupation string for the node
         def volumes
           s = format('%d/%d', @volumes[0], @volumes[1])
@@ -233,11 +237,28 @@ module Ui
         @dt = Time.now
       end
 
-      def refresh
+      def refresh(fetch=true, order)
+        reload! if fetch
+        sort!(order)
+
+        @dt = Time.now
+      end
+
+      # sort nodes by sort function - default is occupancy
+      def sort!(method = :pods_descending)
+        if method == :pods_descending
+          @nodes.sort!{|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
+        end
+
+        if method == :pods_ascending
+          @nodes.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
+        end
+      end
+
+      # reload upstream data
+      def reload!
         cwi = @instances.instances
         nodes = @model.nodes
-        @dt = Time.now
-
         @nodes = @model.nodes.map { |node| Row.new(node, cwi ? cwi[node[:name]] : {} )  }
         # pp nodes
         @summary = {
@@ -254,8 +275,7 @@ module Ui
       end
 
       def render_lines
-        @nodes.sort {|a, b| a.name <=> b.name }
-          .map do |node|
+        @nodes.collect do |node|
           node.render(@columns)
         end.join("\n") << "\n"
       end

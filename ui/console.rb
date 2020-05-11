@@ -46,10 +46,15 @@ module Ui
     end
 
     # redraw the screen
-    def refresh
+    def refresh(f=true, order=:default)
+      print cursor.clear_screen
+      c_topleft
+      send(:spin_start)
+
       @buffer = Concurrent::Promises.future do
         begin
-          c = load_content
+          model.refresh(fetch=f, order)
+          c = render_model
           send(:spin_stop)
           c_goto(0, 2)
           c
@@ -59,10 +64,6 @@ module Ui
         end
       end
 
-      print cursor.clear_screen
-      c_topleft
-      send(:spin_start)
-
       print @buffer.value(timeout=15)
 
       c_bottomrighttext(render_refresh_time)
@@ -70,11 +71,6 @@ module Ui
       c_bottomleft
       res = send(:prompt)
       handle(res)
-    end
-
-    def load_content
-      send(:refresh_model)
-      send(:render_model)
     end
 
     def c_goto(x,y)
@@ -114,7 +110,7 @@ module Ui
     def render
       refresh
       loop do
-        refresh
+        refresh(f=false)
       end
     end
   end
@@ -158,8 +154,16 @@ module Ui
         q.choice key: 'a', name: 'Filter by annotation' do :annotations end
         q.choice key: 'l', name: 'Filter by labels' do :labels end
         q.choice key: 'u', name: 'Show usage' do :usage end
+        q.choice key: 'o', name: 'Order output' do get_order end
         q.choice key: 'q', name: 'Quit' do :quit end
       end
+    end
+
+    def get_order
+      [:order, reader.expand('Order by', auto_hint: false) do |q|
+        q.choice key: 'a', name: 'Pods (ascending occupancy)', value: :pods_ascending
+        q.choice key: 'd', name: 'Pods (descending occupancy)', value: :pods_descending
+      end]
     end
 
     # node keypresses
@@ -169,14 +173,18 @@ module Ui
         puts "Fetching cloudwatch metrics..."
       end
 
+      if evt.is_a?(Array) && :order == evt[0]
+        refresh(f=false, order=evt[1])
+      end
+
       if :refresh == evt
-        refresh_model
+        refresh
       end
     end
 
-    # reload the node report
-    def refresh_model
-      model.refresh
-    end
+    # # reload the node report
+    # def refresh_model(f=true)
+    #   model.refresh(fetch=f)
+    # end
   end
 end

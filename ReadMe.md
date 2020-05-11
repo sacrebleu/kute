@@ -4,11 +4,13 @@
 
 ###### TODO
 
-1. interactive mode
-2. node details
-3. services
-4. ingresses
-5. config maps etc 
+1. node details
+2. services
+3. ingresses
+4. config maps etc
+5. pods
+6. paging
+7. sorting 
 
 #### Overview
 
