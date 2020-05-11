@@ -1,6 +1,6 @@
 ## kute
 
-###### version 0.0.1
+###### version 0.0.2
 
 ###### TODO
 
@@ -18,7 +18,7 @@ Kute is a lightweight EKS cluster viewer that is intended to provide better info
 than kubectl does.  It creates a heads up display of an EKS cluster, displaying nodes along with
 their capacities, kubelet version, and pod and volume capacity based on published AWS stats.
 
-![kute defaults to displaying nodes and node-related data](./screenshot.png "kute default mode")
+![kute defaults to displaying nodes and node-related data](./docs/screenshot-0.0.2.png "kute default mode")
 
 `kute` is intended to provide a very quick top-level view of a cluster that will serve as a launch
 point for further investigation when there are issues reported with the cluster.
