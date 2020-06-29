@@ -43,26 +43,13 @@ module Ui
       class Row
         # attributes that don't match a column name won't be rendered
         # attr_reader :node, :region, :version
-        attr_reader :name, :region, :version, :age
-
-        def human_duration(secs, significant_only = true)
-          n = secs.round
-          parts = [60, 60, 24, 0].map{|d| next n if d.zero?; n, r = n.divmod d; r}.
-            reverse.zip(%w(d h m s)).drop_while{|n, u| n.zero? }
-          if significant_only
-            parts = parts[0..1] # no rounding, sorry
-            parts << '0' if parts.empty?
-          end
-          res = parts.flatten.join.split('d').first
-          res.match(/[sm]/)? res : "#{res}d"
-        end
+        attr_reader :region, :version, :age
 
         def initialize(node, instance)
           @name = node[:name]
-          # pp DateTime.now, DateTime.parse(node[:age]), DateTime.now - DateTime.parse(node[:age])
-          #
+
           dur = (DateTime.now - DateTime.parse(node[:age]))*60*60*24
-          @age = human_duration(dur)
+          @age = Ui::Util::Duration.human(dur)
           @region = node[:region]
           @pods = [node[:pods].to_i, node[:capacity][:pods].to_i,
                    node[:pods].to_f/node[:capacity][:pods].to_f]
@@ -75,7 +62,20 @@ module Ui
           @cpu = instance[:cpu] || 0
           @disk = instance[:disk] || 0
           @mem = instance[:memory] || 0
+          @selected = false
+        end
 
+        def select!
+          # puts "selected #{@name}"
+          @selected = true
+        end
+
+        def deselect!
+          @selected = false
+        end
+
+        def selected?
+          @selected
         end
 
         # render an ansi pod occupancy string for the node
@@ -87,6 +87,18 @@ module Ui
             $pastel.yellow(s)
           else
             s
+          end
+        end
+
+        def to_s
+          @name
+        end
+
+        def name
+          if @selected
+            $pastel.white.bold(@name)
+          else
+            @name
           end
         end
 
@@ -233,6 +245,7 @@ module Ui
           [:disk,     5]
         ].map { |e| Column.new(*e) }.freeze
         @nodes = []
+        @selected = -1
         @summary = {}
         @dt = Time.now
       end
@@ -242,6 +255,7 @@ module Ui
         sort!(order)
 
         @dt = Time.now
+        select_first! unless selected
       end
 
       # sort nodes by sort function - default is occupancy
@@ -258,16 +272,16 @@ module Ui
       # reload upstream data
       def reload!
         cwi = @instances.instances
-        nodes = @model.nodes
-        @nodes = @model.nodes.map { |node| Row.new(node, cwi ? cwi[node[:name]] : {} )  }
-        # pp nodes
+        t_n = @model.nodes
+        @nodes = t_n.map { |node| Row.new(node, cwi ? cwi[node[:name]] : {} )  }
         @summary = {
-          current_pods: nodes.inject(0) { |sum, n| sum + n[:pods].to_i },
-          max_pods: nodes.inject(0) { |sum, n| sum + n[:capacity][:pods].to_i },
-          current_volumes: nodes.inject(0)  { |sum, n| sum + n[:volume_count].to_i },
-          max_volumes: nodes.inject(0) { |sum, n| sum + n[:capacity][:ebs_volumes].to_i },
-          nodes: nodes.size
+          current_pods: t_n.inject(0) { |sum, n| sum + n[:pods].to_i },
+          max_pods: t_n.inject(0) { |sum, n| sum + n[:capacity][:pods].to_i },
+          current_volumes: t_n.inject(0)  { |sum, n| sum + n[:volume_count].to_i },
+          max_volumes: t_n.inject(0) { |sum, n| sum + n[:capacity][:ebs_volumes].to_i },
+          nodes: t_n.size
         }
+        select_first!
       end
 
       def render_header
@@ -290,8 +304,53 @@ module Ui
         output << render_summary
       end
 
+      # time of the last data refresh
       def last_refresh
         @dt
+      end
+
+      # get the currently selected row
+      def selected
+        @nodes.any?(&:selected?) ? @nodes.select(&:selected?).first : nil
+      end
+
+      def select!
+        @nodes[@selected].select!
+      end
+
+      # reset all node selection flags to false
+      def clear_selection!
+        @nodes.each(&:deselect!)
+      end
+
+      # return true if the next node was selected, false otherwise
+      def select_next!
+        if selected && @selected < @nodes.length - 1
+          clear_selection!
+
+          @selected = @selected + 1
+          select!
+        else
+          false
+        end
+      end
+
+      # return true if the previous node was selected, false otherwise
+      def select_previous!
+        if @selected > 0
+          clear_selection!
+          @selected = @selected - 1
+          select!
+        else
+          false
+        end
+      end
+
+      # select the first node in the current node ordering
+      def select_first!
+        @selected = 0
+        clear_selection!
+        @nodes[@selected].select!
       end
     end
   end

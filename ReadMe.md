@@ -5,6 +5,7 @@
 ###### TODO
 
 1. node details
+  scroll up and down nodes, or select node by name...
 2. services
 3. ingresses
 4. config maps etc
@@ -54,7 +55,7 @@ Once rbenv is installed, install ruby 2.5.1 by running `rbenv install` from the 
 
     jbotha@mundus:~/ruby/kute$ rbenv install
     
-Once ruby 2.5.1 is install, test it:
+Once ruby 2.5.1 is installed, test it:
 
     jbotha@mundus:~/ruby/kute$ ruby --version
     ruby 2.5.1p57 (2018-03-29 revision 63029) [x86_64-darwin17] 

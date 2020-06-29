@@ -20,4 +20,5 @@ gem 'pastel', git: 'https://github.com/piotrmurach/pastel'
 
 gem 'tty', git: 'https://github.com/sacrebleu/tty'
 
-gem 'concurrent-ruby', '~> 1.1'
+gem 'concurrent-ruby', '~> 1.1.6'
+gem 'concurrent-ruby-edge', '0.6.0'

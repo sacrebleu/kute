@@ -15,8 +15,13 @@ require 'fileutils'
 # require 'colorize' # TODO remove
 require 'optparse'
 require 'concurrent-ruby'
+require 'concurrent-edge'
 
 require 'pp'
+
+require_relative 'ui/cards/nodes'
+require_relative 'ui/controller/nodes'
+require_relative 'ui/controller/pods'
 
 # rudimentary logger
 $settings = {}
@@ -59,8 +64,10 @@ end.parse!
 require_relative 'log'
 require_relative 'cfg/kubeconfig'
 require_relative 'ui/cards/nodes'
+require_relative 'ui/cards/pods'
 require_relative 'ui/console'
 require_relative 'model/nodes'
+require_relative 'model/pods'
 require_relative 'model/instance_mapper'
 
 # extract servers and endpoints
@@ -83,16 +90,8 @@ auth_options = {
 
 ssl_options = { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
 
-# Log.dump " profile:", $pastel.cyan($settings[:profile])
-# Log.dump " context:", $pastel.cyan(context['name'])
-# Log.dump " cluster:", $pastel.cyan(context['cluster'])
-# Log.dump "endpoint:", $pastel.green(context['server'])
-# print "\n"
-
 cluster_name=context['name'].split('/')[1]
 
-# spinner = TTY::Spinner.new("[:spinner] Collating EKS and Cloudwatch metrics ... ", hide_cursor: true, clear: true)
-# spinner.auto_spin
 
 instances = InstanceMapper.new(credentials, cluster_name, $settings)
 
@@ -103,21 +102,8 @@ client = Kubeclient::Client.new(
   ssl_options: ssl_options
 )
 
-controller = Ui::Controller.new(context)
+console = Ui::Console.new(context)
+console.nodes = Ui::Cards::Nodes.new(client, instances, context)
+console.pods  = Ui::Cards::Pods.new(client,  context)
+console.select(:nodes)
 
-# case $settings[:resource]
-# when :nodes
-#
-# model = Model::Nodes.new(client).nodes
-#
-# card = Ui::Cards::Nodes.new(client, instances)
-
-controller.nodes = Ui::Cards::Nodes.new(client, instances, context)
-
-controller.select(:nodes)
-
-  # spinner.stop
-  # puts res
-# end
-
-# puts "\n"
