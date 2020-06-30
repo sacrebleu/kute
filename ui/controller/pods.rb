@@ -27,12 +27,12 @@ module Ui
 
       # node commands
       def prompt
-        [
+        s = [
           "#{$pastel.cyan.bold("o")}rder",
-          "#{$pastel.cyan.bold("n")}odes",
-          "#{$pastel.cyan.bold("q")}uit",
-          "node: #{model.node}"
+          "#{$pastel.cyan.bold("q")}uit"
         ].join(' ')
+
+        "#{model.node}: #{s}> "
       end
 
       def go_nodes

@@ -9,13 +9,25 @@ module Model
 
     # retrieve node list
     def pods(node)
-      @client.get_pods(field_selector: "spec.nodeName=#{node}").map do |p|
-        pp p;
+      pods = @client.get_pods(field_selector: "spec.nodeName=#{node}").map do |p|
         {
           name: p.metadata.name,
-          node: node
+          node: node,
+          namespace: p.metadata.namespace,
+          containers: p.spec.containers.length,
+          volumes: p.spec.volumes.length,
+          serviceAccount: p.spec.serviceAccount,
+          status: p.status.phase,
+          ip: p.status.podIP,
+          restarts: p.status.containerStatuses.collect{|e| e[:restartCount] }.reduce(:+),
+          ports: (p.spec.containers || [])
+                   .map{ |c| "#{c.name} #{(c.ports || [])
+                                            .map{|p| "#{p[:protocol]}:#{p[:containerPort]}"}.join(",")}" }
+                   .join(',')
         }
       end
+      pods.sort!{|a,b| a[:name] <=> b[:name] }
+      pods
     end
   end
 end

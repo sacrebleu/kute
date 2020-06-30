@@ -3,50 +3,35 @@ module Ui
   module Cards
     class Pods
 
-      # formatting utility class
-      class Column
-        attr_accessor :name, :width, :align
-
-        def initialize(*ary)
-          @name = ary[0]
-          @width = ary[1]
-          @align = ary.length > 2 ? ary[2] : :right
-        end
-
-        def align_right?
-          @align == :right
-        end
-
-        # render this column's name according to the layout rules
-        def title
-          v = name.to_s.capitalize
-          align_right? ? rjust(v) : ljust(v)
-        end
-
-        # render the target according to this column's layout rules
-        def render(target)
-          align_right? ? rjust(target) : ljust(target)
-        end
-
-        def rjust(source)
-          empty = ' ' * (width - $pastel.strip(source).length)
-          "#{empty}#{source}"
-        end
-
-        def ljust(source)
-          empty = ' ' * (width - $pastel.strip(source).length)
-          "#{source}#{empty}"
-        end
-      end
+      COLUMNS = [
+        [:name,     45, :left],
+        [:namespace, 20, :left],
+        [:con, 5, :left],
+        [:vol, 5, :left],
+        [:status, 10, :left],
+        [:rst, 5, :left],
+        [:ports, 30, :left],
+        [:serviceaccount, 20, :left],
+        [:ip, 15, :left]
+      ].map { |e| Ui::Layout::Column.new(*e) }.freeze
 
       # models a row in the report
       class Row
         # attributes that don't match a column name won't be rendered
         # attr_reader :node, :region, :version
-        attr_reader :region, :version, :age
+        attr_reader :region, :version, :age, :namespace, :serviceaccount,
+                    :con, :vol, :status, :ip, :rst, :ports
 
         def initialize(pod)
-          @name = pod[:name]
+          @name = COLUMNS[0].trim pod[:name]
+          @namespace = COLUMNS[1].trim pod[:namespace]
+          @con = COLUMNS[2].trim pod[:containers].to_s
+          @vol = COLUMNS[3].trim pod[:volumes].to_s
+          @status = COLUMNS[4].trim pod[:status]
+          @rst = COLUMNS[5].trim pod[:restarts].to_s
+          @ports = COLUMNS[6].trim pod[:ports]
+          @serviceaccount = COLUMNS[7].trim pod[:serviceAccount]
+          @ip = COLUMNS[8].trim pod[:ip]
           @selected = false
         end
 
@@ -92,9 +77,6 @@ module Ui
       def initialize(client, context)
         @context = context
         @model = Model::Pods.new(client)
-        @columns = [
-          [:name,     45, :left],
-        ].map { |e| Column.new(*e) }.freeze
         @pods = []
         @dt = Time.now
         @selected = -1
@@ -125,12 +107,12 @@ module Ui
       end
 
       def render_header
-        @columns.collect(&:title).join('') << "\n"
+        COLUMNS.collect(&:title).join('') << "\n"
       end
 
       def render_lines
         @pods.collect do |pod|
-          pod.render(@columns)
+          pod.render(COLUMNS)
         end.join("\n") << "\n"
       end
 

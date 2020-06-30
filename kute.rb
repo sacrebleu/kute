@@ -15,13 +15,14 @@ require 'fileutils'
 # require 'colorize' # TODO remove
 require 'optparse'
 require 'concurrent-ruby'
-require 'concurrent-edge'
+# require 'concurrent-edge'
 
 require 'pp'
 
 require_relative 'ui/cards/nodes'
 require_relative 'ui/controller/nodes'
 require_relative 'ui/controller/pods'
+require_relative 'ui/layout/layout'
 
 # rudimentary logger
 $settings = {}

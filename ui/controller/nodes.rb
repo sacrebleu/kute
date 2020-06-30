@@ -23,14 +23,13 @@ module Ui
 
       # node commands
       def prompt
-        [
+        s = [
           "#{$pastel.cyan.bold("o")}rder",
           "#{$pastel.cyan.bold("p")}ods",
           "#{$pastel.cyan.bold("c")}loudwatch",
-          "#{$pastel.cyan.bold("q")}uit",
-          "selected: #{model.selected}"
-
+          "#{$pastel.cyan.bold("q")}uit"
         ].join(' ')
+        "#{model.selected}: #{s}> "
       end
 
       def get_order

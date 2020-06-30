@@ -60,7 +60,7 @@ module Ui
 
         c_bottomleft
 
-        reader.read_line("Cmd: #{prompt} >")
+        reader.read_line(prompt)
       end
 
       def c_goto(x,y)
