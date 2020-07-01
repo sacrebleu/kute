@@ -36,9 +36,10 @@ module Ui
       end
 
       def go_pods(pod)
-        # puts "selecting node #{node}"
+        app.pods.for_node(pod.spec.nodeName)
+        app.pods.scroll_to(pod.metadata.name)
         app.select(:pods)
-        app.pods.for_node(pod.metadata.node)
+
         done!
       end
 
@@ -48,12 +49,17 @@ module Ui
 
         # > and p both fetch pods from the selected node
         if evt.key.name == :left || evt.value == 'p'
-          go_pods(model.pod.node)
+          go_pods(model.pod)
         end
 
         if evt.value == 'r' || evt.key.name == :enter
           model.reload!
           refresh(false)
+        end
+
+        if evt.value == 'd'
+          pp model.pod
+          sleep(5)
         end
 
         taint!

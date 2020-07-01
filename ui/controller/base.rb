@@ -14,13 +14,13 @@ module Ui
       end
 
       def spin_start
-        @spinner = TTY::Spinner.new("[:spinner]> #{$pastel.cyan(@app.context['name'])} [#{$pastel.green($settings[:profile])}]",
-                                    hide_cursor: true, clear: false)
+        @spinner = TTY::Spinner.new("[#{$pastel.green($settings[:profile])}] #{$pastel.cyan(@app.context['name'])} :spinner",
+                                    hide_cursor: true, clear: false, success_mark: '')
         @spinner.auto_spin
       end
 
       def spin_stop
-        @spinner.stop
+        @spinner.success
       end
 
       def cursor

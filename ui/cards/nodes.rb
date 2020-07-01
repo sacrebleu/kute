@@ -26,6 +26,7 @@ module Ui
           @cpu = instance[:cpu] || 0
           @disk = instance[:disk] || 0
           @mem = instance[:memory] || 0
+          @container_health = node[:container_health]
           @selected = false
         end
 
@@ -62,7 +63,7 @@ module Ui
           if @selected
             $pastel.white.bold(@name)
           else
-            @name
+            @container_health ? @name : $pastel.yellow(@name)
           end
         end
 
@@ -171,6 +172,7 @@ module Ui
           @taints = []
           @affinity = ''
           @version = ''
+          @container_health = true
         end
 
         def cpu
@@ -218,8 +220,10 @@ module Ui
         reload! if fetch
         sort!(order)
 
-        @dt = Time.now
+        select! if @selected > -1
         select_first! unless selected
+
+        @dt = Time.now
       end
 
       # sort nodes by sort function - default is occupancy
@@ -245,7 +249,6 @@ module Ui
           max_volumes: t_n.inject(0) { |sum, n| sum + n[:capacity][:ebs_volumes].to_i },
           nodes: t_n.size
         }
-        select_first!
       end
 
       def render_header

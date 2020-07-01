@@ -18,9 +18,15 @@ module Model
     def nodes
       pods = {}
 
+      # for each pod, get its container statuses as well
       @client.get_pods(field_selector: "status.phase=Running").map do |p|
-        pods[p.spec.nodeName] ||= 0
-        pods[p.spec.nodeName] += 1
+        s = (p.status.containerStatuses.select { |e| e.state.running || e.state.terminated&.exitCode == 0 }.length == p.spec.containers.length)
+
+        # pp [p.status.containerStatuses.select { |e| e.state.running }.length, p.spec.containers.length, s]
+
+        pods[p.spec.nodeName] ||=  {count: 0, status: true}
+        pods[p.spec.nodeName][:count] += 1
+        pods[p.spec.nodeName][:status] = pods[p.spec.nodeName][:status] && s
       end
 
       @client.get_nodes.map do |node|
@@ -45,12 +51,13 @@ module Model
             ephemeral: node.status[:allocatable][:"ephemeral-storage"],
             memory: node.status[:allocatable][:memory],
             ebs_volumes: node.status[:capacity][:"attachable-volumes-aws-ebs"].to_i - v_use,
-            pods: node.status[:capacity][:pods].to_i - pods[node.metadata.name]
+            pods: node.status[:capacity][:pods].to_i - pods[node.metadata.name][:count]
           },
           status: node_conditions(node.status.conditions),
           volumes: node.volumesInUse,
           volume_count: v_use,
-          pods: pods[node.metadata.name]
+          pods: pods[node.metadata.name][:count],
+          container_health: pods[node.metadata.name][:status]
         }
       end
     end

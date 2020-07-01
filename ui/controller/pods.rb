@@ -46,6 +46,10 @@ module Ui
         done!
       end
 
+      def scroll_to(pod)
+        model.scroll_to(pod)
+      end
+
       # node keypresses
       def handle(evt)
         super(evt)

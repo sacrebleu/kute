@@ -56,12 +56,26 @@ module Ui
         Ui::Layout::Justifier.ljust(s, w)
       end
 
+      def container_status(cs)
+        if cs.state.running
+          "#{$pastel.bold.white("Running")} since #{cs.state.running.startedAt} [restarts: #{cs.restartCount}]"
+        elsif cs.state.terminated
+          if cs.state.terminated.exitCode > 0
+            "#{$pastel.bold.red("Terminated")} (#{cs.state.terminated.reason}) at #{cs.state.terminated.finishedAt}"
+          else
+            "#{$pastel.bold.white("Terminated")} (#{cs.state.terminated.reason}) at #{cs.state.terminated.finishedAt}"
+          end
+        else
+          "#{$pastel.bold.yellow("Waiting")} (#{cs.state.waiting.reason}) [restarts: #{cs.restartCount}]"
+        end
+      end
+
       def render
         # row 1 - start time, status, ip, controlled-by
-        owr = pod.metadata.ownerReferences.first
+        owr = pod.metadata.ownerReferences&.first || {}
 
         cnw = [pod.spec.containers.map{|c| c[:name].length }.max + 1, 8].max
-        iw  = pod.spec.containers.map{|c| c[:image].length }.max + 1
+        # iw  = pod.spec.containers.map{|c| c[:image].length }.max + 1
 
         statuses = Hash[pod.status.containerStatuses.map do |cs|
           [cs[:name], cs]
@@ -73,18 +87,18 @@ module Ui
           name = statuses[c[:name]][:ready] ? $pastel.green(c[:name][0..cnw-1]) : $pastel.yellow(c[:name][0..cnw-1])
           s = statuses[c[:name]]
 
-          state = s[:state].to_h.keys.first
-          since = s[:state][state][:startedAt]
+          # state = s[:state].to_h.keys.first
+          # since = s[:state][state][:startedAt]
 
           <<~CONT
-          #{_lj(name, cnw)} #{$pastel.bold.white(state)} since #{since} [restarts: #{s[:restartCount]}]
+          #{_lj(name, cnw)} #{container_status(s)}
           #{_rj('image:', cnw)} #{c[:image]} (pull: #{$pastel.cyan(c[:imagePullPolicy])})
-          #{_rj('ports:', cnw)} #{c[:ports].map{|p| "#{p[:protocol]}:#{p[:containerPort]}"}.join(', ')}
-          #{_rj('mounts:', cnw)} #{c[:volumeMounts].map{|v| "#{v[:name]} -> #{v[:mountPath]}#{v[:readOnly]?" [ro]":$pastel.yellow(" [w+]")}"}.join("\n #{_lj(' ', cnw)}")}
+          #{_rj('ports:', cnw)} #{c[:ports]&.map{|p| "#{p[:protocol]}:#{p[:containerPort]}"}&.join(', ')}
+          #{_rj('mounts:', cnw)} #{c[:volumeMounts].map{|v| "#{v[:name]} -> #{v[:mountPath]}#{v[:readOnly]?" [ro]":$pastel.yellow(" [w+]")}"}&.join("\n #{_lj(' ', cnw)}")}
           CONT
         end.join("\n")
 
-        generator = "#{owr[:name]} [#{owr[:kind]}]"
+        generator = owr ? "#{owr[:name]} [#{owr[:kind]}]" : "Unknown"
         w = [generator, pod.spec.schedulerName].collect(&:length).max + 1
 
         out = <<~DONE
@@ -98,7 +112,7 @@ module Ui
         
           labels:     #{pod.metadata.labels.to_h.reject{|k,_| ["pod-template-hash", :version].include?(k)}.map{|k,v| "#{k}=#{$pastel.cyan(v)}"}.join("\n            ")}
           annotate:   #{pod.metadata.annotations.to_h.reject{|k,_| [:"kubernetes.io/psp"].include?(k)}.map{|k,v| "#{k}=#{$pastel.cyan(v)}"}.join("\n            ")}
-          tolerate:   #{pod.spec.tolerations.map {|t| "#{t.operator} #{t.key} -> #{$pastel.bold.white(t.effect)} #{t.tolerationSeconds}s"}.join("\n            ")}
+          tolerate:   #{pod.spec.tolerations.map {|t| "#{t.operator} #{t.key} -> #{$pastel.bold.white(t.effect)} #{t.tolerationSeconds ? "#{t.tolerationSeconds}s" : "" }"}.join("\n            ")}
 
           containers:
           #{cnt}

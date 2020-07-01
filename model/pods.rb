@@ -19,7 +19,8 @@ module Model
           serviceAccount: p.spec.serviceAccount,
           status: p.status.phase,
           ip: p.status.podIP,
-          restarts: p.status.containerStatuses.collect{|e| e[:restartCount] }.reduce(:+),
+          running: p.status.containerStatuses.select { |e| e.state.running }.length,
+          restarts: p.status.containerStatuses.collect { |e| e[:restartCount] }.reduce(:+),
           ports: (p.spec.containers || [])
                    .map{ |c| "#{c.name} #{(c.ports || [])
                                             .map{|p| "#{p[:protocol]}:#{p[:containerPort]}"}.join(",")}" }

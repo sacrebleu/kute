@@ -6,7 +6,7 @@ module Ui
       COLUMNS = [
         [:name,     45, :left],
         [:namespace, 20, :left],
-        [:con, 5, :left],
+        [:con, 7, :left],
         [:vol, 5, :left],
         [:status, 10, :left],
         [:rst, 5, :left],
@@ -20,19 +20,29 @@ module Ui
         # attributes that don't match a column name won't be rendered
         # attr_reader :node, :region, :version
         attr_reader :region, :version, :age, :namespace, :serviceaccount,
-                    :con, :vol, :status, :ip, :rst, :ports
+                    :con, :vol, :ip, :rst, :ports
 
         def initialize(pod)
           @name = COLUMNS[0].trim pod[:name]
           @namespace = COLUMNS[1].trim pod[:namespace]
-          @con = COLUMNS[2].trim pod[:containers].to_s
+          @con = containers(pod)
+          @con_status = pod[:running] == pod[:containers]
           @vol = COLUMNS[3].trim pod[:volumes].to_s
-          @status = COLUMNS[4].trim pod[:status]
+          # @status = COLUMNS[4].trim pod[:status]
           @rst = COLUMNS[5].trim pod[:restarts].to_s
           @ports = COLUMNS[6].trim pod[:ports]
           @serviceaccount = COLUMNS[7].trim pod[:serviceAccount]
           @ip = COLUMNS[8].trim pod[:ip]
           @selected = false
+        end
+
+        def containers(pod)
+          pod[:running] < pod[:containers] ?
+            "#{$pastel.yellow(pod[:running])}/#{pod[:containers]}" : "#{pod[:running]}/#{pod[:containers]}"
+        end
+
+        def status
+          @con_status ? "Ok" : $pastel.yellow("*")
         end
 
         def select!
@@ -55,17 +65,13 @@ module Ui
           end
         end
 
-        # render an ansi status string for the pod
-        def status
-          'Ok'
-        end
+
 
         # layout columns
         def render(columns)
           output = ''
           columns.each do |column|
             m = column.name
-            # puts "#{m}=#{send(m)}"
             output << column.render(send(m))
           end
           output
@@ -90,6 +96,8 @@ module Ui
 
       def refresh(fetch, order=:default)
         reload! if fetch
+
+        select! if @selected > -1
         select_first! unless selected
 
         @dt = Time.now
@@ -98,7 +106,6 @@ module Ui
       # reload upstream data
       def reload!
         @pods = @model.pods(@node).map { |pod| Row.new(pod) }
-        select_first!
       end
 
       def render_header
@@ -124,6 +131,11 @@ module Ui
       # get the currently selected row
       def selected
         @pods.any?(&:selected?) ? @pods.select(&:selected?).first : nil
+      end
+
+      def scroll_to(name)
+        @selected = @pods.index {|p| $pastel.strip(p.name) == $pastel.strip(name) } || 0
+        select!
       end
 
       def select!
