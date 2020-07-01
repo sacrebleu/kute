@@ -51,7 +51,7 @@ module Ui
         super(evt)
 
         # > and p both fetch pods from the selected node
-        if evt.key.name == :right || evt.value == 'p'
+        if evt.key.name == :right || evt.value == 'p' || evt.key.name == :enter || evt.key.name == :return
           n = model.selected.to_s
           go_pods(n)
         end

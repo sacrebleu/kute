@@ -55,7 +55,7 @@ module Ui
           go_nodes
         end
 
-        if evt.key.name == :right || evt.value == 'd'
+        if evt.key.name == :right || evt.value == 'd' || evt.key.name == :enter || evt.key.name == :return
           go_pod_details(model.selected)
         end
 
