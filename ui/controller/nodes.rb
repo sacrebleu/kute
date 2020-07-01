@@ -40,7 +40,7 @@ module Ui
       end
 
       def go_pods(node)
-        puts "selecting node #{node}"
+        # puts "selecting node #{node}"
         app.pods.for_node(node)
         app.select(:pods)
         done!

@@ -26,12 +26,20 @@ module Ui
       @cards[:pods] = Ui::Controller::Pods.new(self, card)
     end
 
+    def pod_details=(card)
+      @cards[:pod_details] = Ui::Controller::PodDetails.new(self, card)
+    end
+
     def pods
       @cards[:pods]
     end
 
     def nodes
       @cards[:nodes]
+    end
+
+    def pod_details
+      @cards[:pod_details]
     end
 
     def select(key)

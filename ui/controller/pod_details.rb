@@ -3,7 +3,7 @@ require_relative 'base'
 module Ui
   module Controller
     # ui to render node information
-    class Pods < Base
+    class PodDetails < Base
       attr_reader :model
 
       def initialize(console, model)
@@ -16,8 +16,8 @@ module Ui
         model.render
       end
 
-      def for_node(node)
-        model.for_node(node)
+      def for_pod(pod)
+        model.for(pod)
       end
 
       # when did we last refresh
@@ -28,21 +28,17 @@ module Ui
       # node commands
       def prompt
         s = [
-          "#{$pastel.cyan.bold("o")}rder",
+          "#{$pastel.cyan.bold("b")}ack",
           "#{$pastel.cyan.bold("q")}uit"
         ].join(' ')
 
-        "#{model.node}: #{s}> "
+        "#{model.pod.metadata.namespace}/#{model.pod.metadata.name}: #{s}> "
       end
 
-      def go_nodes
-        app.select(:nodes)
-        done!
-      end
-
-      def go_pod_details(pod)
-        app.pod_details.for_pod(pod)
-        app.select(:pod_details)
+      def go_pods(pod)
+        # puts "selecting node #{node}"
+        app.select(:pods)
+        app.pods.for_node(pod.metadata.node)
         done!
       end
 
@@ -51,21 +47,12 @@ module Ui
         super(evt)
 
         # > and p both fetch pods from the selected node
-        if evt.key.name == :left || evt.value == 'n'
+        if evt.key.name == :left || evt.value == 'p'
           go_nodes
         end
 
-        if evt.key.name == :right || evt.value == 'd'
-          go_pod_details(model.selected)
-        end
-
-        if evt.key.name == :up
-          model.select_previous!
-          refresh(false)
-        end
-
-        if evt.key.name == :down
-          model.select_next!
+        if evt.value == 'r' || evt.key.name == :enter
+          model.reload!
           refresh(false)
         end
 

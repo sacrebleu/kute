@@ -12,7 +12,6 @@ require 'kubeclient'
 require 'aws-sdk-ec2'
 require 'aws-sdk-cloudwatch'
 require 'fileutils'
-# require 'colorize' # TODO remove
 require 'optparse'
 require 'concurrent-ruby'
 # require 'concurrent-edge'
@@ -22,6 +21,7 @@ require 'pp'
 require_relative 'ui/cards/nodes'
 require_relative 'ui/controller/nodes'
 require_relative 'ui/controller/pods'
+require_relative 'ui/controller/pod_details'
 require_relative 'ui/layout/layout'
 
 # rudimentary logger
@@ -66,6 +66,7 @@ require_relative 'log'
 require_relative 'cfg/kubeconfig'
 require_relative 'ui/cards/nodes'
 require_relative 'ui/cards/pods'
+require_relative 'ui/cards/pod'
 require_relative 'ui/console'
 require_relative 'model/nodes'
 require_relative 'model/pods'
@@ -106,5 +107,6 @@ client = Kubeclient::Client.new(
 console = Ui::Console.new(context)
 console.nodes = Ui::Cards::Nodes.new(client, instances, context)
 console.pods  = Ui::Cards::Pods.new(client,  context)
+console.pod_details= Ui::Cards::Pod.new(client, context)
 console.select(:nodes)
 

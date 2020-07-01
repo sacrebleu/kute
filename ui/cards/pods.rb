@@ -90,7 +90,7 @@ module Ui
 
       def refresh(fetch, order=:default)
         reload! if fetch
-        select_first! unless selected?
+        select_first! unless selected
 
         @dt = Time.now
       end
@@ -99,11 +99,6 @@ module Ui
       def reload!
         @pods = @model.pods(@node).map { |pod| Row.new(pod) }
         select_first!
-      end
-
-      # get the currently selected row
-      def selected?
-        @pods.any?(&:selected?) ? @pods.select(&:selected?).first : nil
       end
 
       def render_header
@@ -128,7 +123,11 @@ module Ui
 
       # get the currently selected row
       def selected
-        selected > -1 ? @pods[@selected] : nil
+        @pods.any?(&:selected?) ? @pods.select(&:selected?).first : nil
+      end
+
+      def select!
+        @pods[@selected].select!
       end
 
       # reset all node selection flags to false
@@ -138,11 +137,11 @@ module Ui
 
       # return true if the next node was selected, false otherwise
       def select_next!
-        if @selected < @pods.length - 1
-          @pods[@selected].deselect!
+        if selected && @selected < @pods.length - 1
+          clear_selection!
+
           @selected = @selected + 1
-          @pods[@selected].select!
-          true
+          select!
         else
           false
         end
@@ -151,10 +150,10 @@ module Ui
       # return true if the previous node was selected, false otherwise
       def select_previous!
         if @selected > 0
-          @pods[@selected].deselect!
+          clear_selection!
+
           @selected = @selected - 1
-          @pods[@selected].select!
-          true
+          select!
         else
           false
         end
@@ -162,11 +161,9 @@ module Ui
 
       # select the first node in the current node ordering
       def select_first!
-        if @selected > -1 && @selected < @pods.length
-          @pods[@selected].deselect!
-        end
         @selected = 0
-        @pods[@selected]&.select!
+        clear_selection!
+        @pods[@selected].select!
       end
     end
   end

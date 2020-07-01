@@ -17,32 +17,45 @@ module Ui
       # render this column's name according to the layout rules
       def title
         v = name.to_s.capitalize
-        align_right? ? rjust(v) : ljust(v)
+        align_right? ? Justifier.rjust(v, width) : Justifier.ljust(v, width)
       end
 
       # render the target according to this column's layout rules
       def render(target)
-        align_right? ? rjust(target) : ljust(target)
+        align_right? ? Justifier.rjust(target, width) : Justifier.ljust(target, width)
       end
 
-      def rjust(source)
-        w = width - $pastel.strip(source).length
-        raise "[#{source}] exceeds column width" if w < 1
-
-        empty = ' ' * w
-        "#{empty}#{source}"
+      def trim(s)
+        s[0..width-2]
       end
+    end
 
-      def ljust(source)
-        w = width - $pastel.strip(source).length
-        raise "[#{source}] exceeds column width" if w < 1
+    # encode justifier logic
+    class Justifier
+      def self.ljust(source, width)
+        if source
+          u = $pastel.strip(source).length
+          w = width - u
+          raise "[#{source}]:#{u} exceeds column width #{width}" if w < 1
+        else
+          w = width
+        end
 
         empty = ' ' * w
         "#{source}#{empty}"
       end
 
-      def trim(s)
-        s[0..width-2]
+      def self.rjust(source, width)
+        if source
+          u = $pastel.strip(source).length
+          w = width - u
+          raise "[#{source}]:#{u} exceeds column width #{width}" if w < 1
+        else
+          w = width
+        end
+
+        empty = ' ' * w
+        "#{empty}#{source}"
       end
     end
   end

@@ -29,5 +29,9 @@ module Model
       pods.sort!{|a,b| a[:name] <=> b[:name] }
       pods
     end
+
+    def describe(pod, namespace)
+      @client.get_pod $pastel.strip(pod), $pastel.strip(namespace)
+    end
   end
 end
