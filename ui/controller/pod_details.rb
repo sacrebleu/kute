@@ -48,7 +48,7 @@ module Ui
 
         # > and p both fetch pods from the selected node
         if evt.key.name == :left || evt.value == 'p'
-          go_nodes
+          go_pods(model.pod.node)
         end
 
         if evt.value == 'r' || evt.key.name == :enter
