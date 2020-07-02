@@ -4,25 +4,71 @@
 
 ###### TODO
 
-1. node details
-  scroll up and down nodes, or select node by name...
+1. cw metrics
 2. services
 3. ingresses
 4. config maps etc
-5. pods
 6. paging
-7. sorting 
+7. sorting
+ 
 
 #### Overview
 
-Kute is a lightweight EKS cluster viewer that is intended to provide better information density
+`kute` is a lightweight EKS cluster viewer that is intended to provide better information density
 than kubectl does.  It creates a heads up display of an EKS cluster, displaying nodes along with
 their capacities, kubelet version, and pod and volume capacity based on published AWS stats.
 
-![kute defaults to displaying nodes and node-related data](./docs/screenshot-0.0.2.png "kute default mode")
-
 `kute` is intended to provide a very quick top-level view of a cluster that will serve as a launch
 point for further investigation when there are issues reported with the cluster.
+
+#### Node List
+
+![kute defaults to displaying nodes and node-related data](./docs/nodes.png "kute default mode")
+
+The node listing displays:
+
+* Node name
+* Node age in human readable format
+* Node region and AZ
+* Pods ( running / max possible on this node )
+* Volumes ( mounted / max possible on this node )
+* Node status
+* Taints present on the Node
+* Tolerations present on the Node
+* EKS version of the node
+
+The currently selected node is highlighted, and if you wish you can drill down into this node to see details
+on the pods and their health.  Nodes with some sort of pod or container related issue are coloured yellow,
+healthy nodes are terminal grey.  Select the node of interest and hit `:enter` or `:right` to drill down into it.
+
+![Kute can display some statistics of a selected node's pods](./docs/pods.png "pod listing for a node")
+
+In the node details screen, you are presented with a list of pods running on the selected node.  
+The pod listing displays:
+
+* Pod Name
+* Pod Namespace
+* Containers (running / total defined for the pod)
+* Volumes
+* Pod Status
+* Restart count
+* An abridged port listing
+* The service account
+* The IP address of the pod
+
+If there is an issue with any of the containers (i.e. none are state running or state terminated with exit code 0) then
+that pod is highlighted in yellow, and the status is set to '*'
+ 
+You can scroll down to select a pod, then hit  `:enter` or `:right` to drill down into it.  Hitting `:left` will return 
+you to the node listing.
+
+![Kute can display the state of a pod's containers](./docs/details.png "container states for a pod")
+
+This gives an overview of a particular pod, showing information such as how it was generated (e.g StatefulSet, ReplicaSet), 
+the state of its various containers (`:waiting`, `:running` or `:terminated`) and varied detailed information on all of them
+such as image, image pull policy, ports, mounts etc.
+
+You can return to the pod listing by hitting `:left`
 
 ###### Default settings
 
