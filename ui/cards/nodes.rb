@@ -30,6 +30,13 @@ module Ui
           @selected = false
         end
 
+        def rejigger(columns)
+          columns.each do |column|
+            m = column.name
+            column.rejigger($pastel.strip(send(m)).length + 1)
+          end
+        end
+
         def select!
           # puts "selected #{@name}"
           @selected = true
@@ -197,11 +204,11 @@ module Ui
         @model = Model::Nodes.new(client)
         @instances = instances
         @columns = [
-          [:name,     45, :left],
+          [:name,     30, :left],
           [:age,      10],
           [:region,   15],
-          [:pods,     9],
-          [:volumes,  9],
+          [:pods,     10],
+          [:volumes,  10],
           [:status,   7],
           [:taints,   15],
           [:affinity, 15],
@@ -241,7 +248,11 @@ module Ui
       def reload!
         cwi = @instances.instances
         t_n = @model.nodes
-        @nodes = t_n.map { |node| Row.new(node, cwi ? cwi[node[:name]] : {} )  }
+        @nodes = t_n.map do |node|
+          r = Row.new(node, cwi ? cwi[node[:name]] : {} )
+          r.rejigger(@columns)
+          r
+        end
         @summary = {
           current_pods: t_n.inject(0) { |sum, n| sum + n[:pods].to_i },
           max_pods: t_n.inject(0) { |sum, n| sum + n[:capacity][:pods].to_i },

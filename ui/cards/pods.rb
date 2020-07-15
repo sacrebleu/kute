@@ -3,18 +3,6 @@ module Ui
   module Cards
     class Pods
 
-      COLUMNS = [
-        [:name,     45, :left],
-        [:namespace, 20, :left],
-        [:con, 7, :left],
-        [:vol, 5, :left],
-        [:status, 10, :left],
-        [:rst, 5, :left],
-        [:ports, 30, :left],
-        [:serviceaccount, 20, :left],
-        [:ip, 15, :left]
-      ].map { |e| Ui::Layout::Column.new(*e) }.freeze
-
       # models a row in the report
       class Row
         # attributes that don't match a column name won't be rendered
@@ -23,22 +11,29 @@ module Ui
                     :con, :vol, :ip, :rst, :ports
 
         def initialize(pod)
-          @name = COLUMNS[0].trim pod[:name]
-          @namespace = COLUMNS[1].trim pod[:namespace]
+          @name = pod[:name]
+          @namespace = pod[:namespace]
           @con = containers(pod)
           @con_status = pod[:running] == pod[:containers]
-          @vol = COLUMNS[3].trim pod[:volumes].to_s
+          @vol = pod[:volumes].to_s
           # @status = COLUMNS[4].trim pod[:status]
-          @rst = COLUMNS[5].trim pod[:restarts].to_s
-          @ports = COLUMNS[6].trim pod[:ports]
-          @serviceaccount = COLUMNS[7].trim pod[:serviceAccount]
-          @ip = COLUMNS[8].trim pod[:ip]
+          @rst = pod[:restarts].to_s
+          @ports = pod[:ports]
+          @serviceaccount = pod[:serviceAccount]
+          @ip = pod[:ip]
           @selected = false
         end
 
         def containers(pod)
           pod[:running] < pod[:containers] ?
             "#{$pastel.yellow(pod[:running])}/#{pod[:containers]}" : "#{pod[:running]}/#{pod[:containers]}"
+        end
+
+        def rejigger(columns)
+          columns.each do |column|
+            m = column.name
+            column.rejigger($pastel.strip(send(m)).length + 1)
+          end
         end
 
         def status
@@ -65,8 +60,6 @@ module Ui
           end
         end
 
-
-
         # layout columns
         def render(columns)
           output = ''
@@ -78,11 +71,22 @@ module Ui
         end
       end
 
-      attr_reader :node
+      attr_reader :node, :columns
 
       def initialize(client, context)
         @context = context
         @model = Model::Pods.new(client)
+        @columns = [
+          [:name,     45, :left],
+          [:namespace, 20, :left],
+          [:con, 7, :left],
+          [:vol, 5, :left],
+          [:status, 10, :left],
+          [:rst, 5, :left],
+          [:ports, 30, :left],
+          [:serviceaccount, 20, :left],
+          [:ip, 15, :left]
+        ].map { |e| Ui::Layout::Column.new(*e) }.freeze
         @pods = []
         @dt = Time.now
         @selected = -1
@@ -105,16 +109,20 @@ module Ui
 
       # reload upstream data
       def reload!
-        @pods = @model.pods(@node).map { |pod| Row.new(pod) }
+        @pods = @model.pods(@node).map do |pod|
+          r = Row.new(pod)
+          r.rejigger(columns)
+          r
+        end
       end
 
       def render_header
-        COLUMNS.collect(&:title).join('') << "\n"
+        $pastel.bold.white(columns.collect(&:title).join('') << "\n")
       end
 
       def render_lines
         @pods.collect do |pod|
-          pod.render(COLUMNS)
+          pod.render(columns)
         end.join("\n") << "\n"
       end
 
