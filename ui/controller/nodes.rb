@@ -18,25 +18,16 @@ module Ui
 
       # when did we last refresh
       def render_refresh_time
-        "Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
+        "#{@pattern ? "search: /#{@pattern}/" : ''} p.#{model.index} Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
       end
 
       # node commands
       def prompt
         s = [
-          "#{$pastel.cyan.bold("o")}rder",
-          "#{$pastel.cyan.bold("p")}ods",
-          "#{$pastel.cyan.bold("c")}loudwatch",
+          "order by pods #{$pastel.cyan.bold("a")}scending/#{$pastel.cyan.bold("d")}escending",
           "#{$pastel.cyan.bold("q")}uit"
         ].join(' ')
-        "#{model.selected}: #{s}> "
-      end
-
-      def get_order
-        [:order, reader.expand('Order by', auto_hint: false) do |q|
-          q.choice key: 'a', name: 'Pods (ascending occupancy)', value: :pods_ascending
-          q.choice key: 'd', name: 'Pods (descending occupancy)', value: :pods_descending
-        end]
+        "#{s}> "
       end
 
       def go_pods(node)
@@ -49,20 +40,62 @@ module Ui
       def handle(evt)
         super(evt)
 
-        # > and p both fetch pods from the selected node
         if evt.key.name == :right || evt.value == 'p' || evt.key.name == :enter || evt.key.name == :return
           n = model.selected.to_s
           go_pods(n)
         end
 
+        if evt.key.name == :space
+          model.next_page
+        end
+
+        if evt.value == 'b'
+          model.previous_page
+        end
+
+        if evt.value == '^'
+          model.first_page
+        end
+
+        if evt.value == '$'
+          model.last_page
+        end
+
+        if evt.value == 'a'
+          model.sort!(:pods_ascending)
+        end
+
+        if evt.value == 'd'
+          model.sort!(:pods_descending)
+        end
+
+        if evt.value == '@'
+          model.sort!(:node_name)
+        end
+
+        if evt.value == '/'
+          begin
+            deregister
+            @pattern = (reader.read_line "search pattern:").strip
+            # @pattern = pattern.strip
+            model.filter!(@pattern)
+            register
+          rescue => e
+            pp e.backtrace
+            register
+          end
+        end
+
+        if evt.value == '*'
+          model.filter! nil
+        end
+
         if evt.key.name == :up
           model.select_previous!
-          refresh(false)
         end
 
         if evt.key.name == :down
           model.select_next!
-          refresh(false)
         end
 
         taint!

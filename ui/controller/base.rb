@@ -10,7 +10,20 @@ module Ui
         @app = console
         @buffer = ""
         @reader = TTY::Reader.new
+        register
+      end
+
+      def register
         @reader.on(:keypress) { |event| handle(event) unless event.nil? }
+      end
+
+      def deregister
+        begin
+          @reader.send(:local_registrations).clear
+        rescue => e
+          puts e.message
+          puts e.backtrace.join("\n")
+        end
       end
 
       def spin_start
@@ -33,6 +46,11 @@ module Ui
 
       def height
         TTY::Screen.height
+      end
+
+      #
+      def pane_height
+        TTY::Screen.height - 2
       end
 
       # redraw the screen
@@ -97,6 +115,7 @@ module Ui
 
       def taint!
         @tainted = true
+        refresh(false)
       end
 
       def untaint!

@@ -1,6 +1,6 @@
 ## kute
 
-###### version 0.0.5
+###### version 0.0.6
 
 ###### TODO
 
@@ -39,7 +39,23 @@ The node listing displays:
 
 The currently selected node is highlighted, and if you wish you can drill down into this node to see details
 on the pods and their health.  Nodes with some sort of pod or container related issue are coloured yellow,
-healthy nodes are terminal grey.  Select the node of interest and hit `:enter` or `:right` to drill down into it.
+healthy nodes are terminal grey.  Select the node of interest and hit `enter` or `right` to drill down into it.
+
+###### Nodes pane navigation:
+
+* `^` : Go to the first page of nodes
+* `space` : Go to the next page of nodes
+* `b` : Go to the previous page of nodes
+* `$` : Go to the last page of nodes 
+
+###### Nodes pane sorting:
+* `a` will sort by pod occupancy in ascending value
+* `d` will sort by pod occupancy in descending value
+* `@` will sort by node name
+
+###### Node pane searching
+* `/` and a regex pattern will try to find nodes running pods with names that match that pattern
+* `*` will remove any search pattern entered with `/`
 
 ![Kute can display some statistics of a selected node's pods](./docs/pods.png "pod listing for a node")
 

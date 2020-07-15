@@ -17,6 +17,7 @@ module Ui
           @region = node[:region]
           @pods = [node[:pods].to_i, node[:capacity][:pods].to_i,
                    node[:pods].to_f/node[:capacity][:pods].to_f]
+          @pod_names = node[:pod_names] # hidden
           @volumes = [node[:volume_count].to_i, node[:capacity][:ebs_volumes].to_i,
                       node[:volume_count].to_f / node[:capacity][:ebs_volumes].to_f ]
           @status = node[:status]
@@ -30,10 +31,14 @@ module Ui
           @selected = false
         end
 
+        def any_pods_like?(pattern)
+          @pod_names.any?{|p| /#{pattern}/.match?(p) }
+        end
+
         def rejigger(columns)
           columns.each do |column|
             m = column.name
-            column.rejigger($pastel.strip(send(m)).length + 1)
+            column.rejigger($pastel.strip(send(m)).length + 2)
           end
         end
 
@@ -68,7 +73,7 @@ module Ui
 
         def name
           if @selected
-            $pastel.white.bold(@name)
+            $pastel.white.bold(@name) + $pastel.bold.yellow(">")
           else
             @container_health ? @name : $pastel.yellow(@name)
           end
@@ -220,6 +225,9 @@ module Ui
         @nodes = []
         @selected = -1
         @summary = {}
+        @page = 0
+        @pattern = ''
+
         @dt = Time.now
       end
 
@@ -234,14 +242,26 @@ module Ui
       end
 
       # sort nodes by sort function - default is occupancy
-      def sort!(method = :pods_descending)
+      def sort!(method)
         if method == :pods_descending
           @nodes.sort!{|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
+          select_first!
         end
 
         if method == :pods_ascending
           @nodes.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
+          select_first!
         end
+
+        if method == :node_name
+          @nodes.sort!{|a, b| a.name <=> b.name }
+          select_first!
+        end
+      end
+
+      def filter!(pattern)
+        @pattern = pattern ? pattern.strip : nil
+        select_first!
       end
 
       # reload upstream data
@@ -267,7 +287,7 @@ module Ui
       end
 
       def render_lines
-        @nodes.collect do |node|
+        window.collect do |node|
           node.render(@columns)
         end.join("\n") << "\n"
       end
@@ -329,6 +349,49 @@ module Ui
         @selected = 0
         clear_selection!
         @nodes[@selected].select!
+      end
+
+      def pane_height
+        TTY::Screen.height - 5 # leave space for columns + totals
+      end
+
+      # next page
+      def next_page
+        @page += 1 if @nodes && (@page + 1) * pane_height < @nodes.length
+      end
+
+      # previous page
+      def previous_page
+        @page -= 1 if @page.positive?
+      end
+
+      # first page
+      def first_page
+        @page = 0
+      end
+
+      def last_age
+        @page = @nodes.length / pane_height
+      end
+
+      def index
+        "#{@page+1}/#{@nodes.length / pane_height + 1}"
+      end
+
+      # current displayable nodes post filter
+      def window
+        nodes = filter
+        if pane_height > nodes.length
+          nodes
+        else
+          i = @page * pane_height
+          j = (@page + 1) * pane_height
+          j > nodes.length ? nodes[i..-1] : nodes[i..j]
+        end
+      end
+
+      def filter
+        @pattern ? @nodes.select{|f| f.any_pods_like?(@pattern) } : @nodes
       end
     end
   end

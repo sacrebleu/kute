@@ -25,6 +25,8 @@ module Model
         # pp [p.status.containerStatuses.select { |e| e.state.running }.length, p.spec.containers.length, s]
 
         pods[p.spec.nodeName] ||=  {count: 0, status: true}
+        pods[p.spec.nodeName][:pod_names] ||= []
+        pods[p.spec.nodeName][:pod_names] << p.metadata.name
         pods[p.spec.nodeName][:count] += 1
         pods[p.spec.nodeName][:status] = pods[p.spec.nodeName][:status] && s
       end
@@ -57,6 +59,7 @@ module Model
           volumes: node.volumesInUse,
           volume_count: v_use,
           pods: pods[node.metadata.name][:count],
+          pod_names: pods[node.metadata.name][:pod_names],
           container_health: pods[node.metadata.name][:status]
         }
       end

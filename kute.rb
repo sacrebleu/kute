@@ -14,17 +14,28 @@ require 'aws-sdk-cloudwatch'
 require 'fileutils'
 require 'optparse'
 require 'concurrent-ruby'
-# require 'concurrent-edge'
+# require 'wisper'
 
 require 'pp'
 
+require_relative 'log'
+require_relative 'cfg/kubeconfig'
+
 require_relative 'ui/cards/nodes'
+require_relative 'ui/cards/pods'
+require_relative 'ui/cards/pod'
+require_relative 'ui/console'
 require_relative 'ui/controller/nodes'
 require_relative 'ui/controller/pods'
 require_relative 'ui/controller/pod_details'
 require_relative 'ui/layout/layout'
 
-# rudimentary logger
+require_relative 'model/nodes'
+require_relative 'model/pods'
+require_relative 'model/instance_mapper'
+
+VERSION = '0.0.6'
+
 $settings = {}
 
 # default to env, or dev profile if nothing is specified
@@ -39,7 +50,7 @@ $settings[:cloudwatch] = false
 $pastel = Pastel.new
 
 OptionParser.new do |opts|
-  opts.banner = 'Usage: kute.rb [options]'
+  opts.banner = "kute [#{VERSION}] \nusage: kute.rb [options]"
 
   opts.on('-v', '--[no-]verbose', 'Log debug information to stdout') do |_|
     $settings[:verbose] = true
@@ -62,16 +73,6 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-require_relative 'log'
-require_relative 'cfg/kubeconfig'
-require_relative 'ui/cards/nodes'
-require_relative 'ui/cards/pods'
-require_relative 'ui/cards/pod'
-require_relative 'ui/console'
-require_relative 'model/nodes'
-require_relative 'model/pods'
-require_relative 'model/instance_mapper'
-
 # extract servers and endpoints
 context = KubeConfig.extract.values.select{|v| v['name'] == $settings[:cluster]}.first
 
@@ -84,16 +85,11 @@ endpoint = context['server']
 
 credentials = Aws::SharedCredentials.new(profile_name: $settings[:profile]).credentials
 
-# pp context
-
 auth_options = {
   bearer_token: Kubeclient::AmazonEksCredentials.token(credentials, $settings[:cluster_name] || context['cluster_name'])
 }
 
-ssl_options = { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
-
 cluster_name=context['name'].split('/')[1]
-
 
 instances = InstanceMapper.new(credentials, cluster_name, $settings)
 
@@ -101,12 +97,13 @@ client = Kubeclient::Client.new(
   endpoint,
   'v1',
   auth_options: auth_options,
-  ssl_options: ssl_options
+  ssl_options: { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
 )
 
 console = Ui::Console.new(context)
 console.nodes = Ui::Cards::Nodes.new(client, instances, context)
 console.pods  = Ui::Cards::Pods.new(client,  context)
 console.pod_details= Ui::Cards::Pod.new(client, context)
+
 console.select(:nodes)
 
