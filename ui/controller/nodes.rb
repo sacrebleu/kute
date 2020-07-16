@@ -18,14 +18,14 @@ module Ui
 
       # when did we last refresh
       def render_refresh_time
-        "#{@pattern ? "search: /#{@pattern}/" : ''} p.#{model.index} Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
+        "#{@pattern ? "search: /#{@pattern}/" : ''} page: #{model.index} Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
       end
 
       # node commands
       def prompt
         s = [
-          "order by pods #{$pastel.cyan.bold("a")}scending/#{$pastel.cyan.bold("d")}escending",
-          "#{$pastel.cyan.bold("q")}uit"
+          "[order: #pods (#{$pastel.cyan.bold("a")}sc/#{$pastel.magenta.bold("d")}esc), #{$pastel.cyan('n')}ode name]",
+          "[#{$pastel.cyan.bold("q")}uit]"
         ].join(' ')
         "#{s}> "
       end

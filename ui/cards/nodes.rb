@@ -375,7 +375,7 @@ module Ui
       end
 
       def index
-        "#{@page+1}/#{@nodes.length / pane_height + 1}"
+        "#{$pastel.cyan(@page+1)}/#{@nodes.length / pane_height + 1}"
       end
 
       # current displayable nodes post filter
