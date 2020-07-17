@@ -22,17 +22,16 @@ module Ui
 
       # when did we last refresh
       def render_refresh_time
-        "Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
+        "#{@pattern ? "search: /#{@pattern}/" : ''} page: #{model.index} Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
       end
 
       # node commands
       def prompt
         s = [
-          "#{$pastel.cyan.bold("o")}rder",
-          "#{$pastel.cyan.bold("q")}uit"
+          "[order: #containers (#{$pastel.cyan.bold("a")}sc/#{$pastel.magenta.bold("d")}esc), pod #{$pastel.cyan('n')}ame]",
+          "[#{$pastel.cyan.bold("q")}uit]"
         ].join(' ')
-
-        "#{model.node}: #{s}> "
+        "#{s}> "
       end
 
       def go_nodes
@@ -71,6 +70,51 @@ module Ui
         if evt.key.name == :down
           model.select_next!
           refresh(false)
+        end
+
+        if evt.key.name == :space
+          model.next_page
+        end
+
+        if evt.value == 'b'
+          model.previous_page
+        end
+
+        if evt.value == '^'
+          model.first_page
+        end
+
+        if evt.value == '$'
+          model.last_page
+        end
+
+        if evt.value == '@'
+          model.sort!(:pod_name)
+        end
+
+        if evt.value == '#'
+          model.sort!(:container_count)
+        end
+
+        if evt.value == '!'
+          model.toggle!(:issues)
+        end
+
+        if evt.value == '/'
+          begin
+            deregister
+            @pattern = (reader.read_line "search pattern:").strip
+            model.filter!(@pattern)
+            model.select_first!
+            register
+          rescue => e
+            pp e.backtrace if $settings[:verbose]
+            register
+          end
+        end
+
+        if evt.value == '*'
+          model.filter! nil
         end
 
         taint!

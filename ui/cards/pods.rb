@@ -8,7 +8,7 @@ module Ui
         # attributes that don't match a column name won't be rendered
         # attr_reader :node, :region, :version
         attr_reader :region, :version, :age, :namespace, :serviceaccount,
-                    :con, :vol, :ip, :rst, :ports
+                    :con, :vol, :ip, :rst
 
         def initialize(pod)
           @name = pod[:name]
@@ -36,6 +36,10 @@ module Ui
           end
         end
 
+        def ports
+          @ports[0..30]
+        end
+
         def status
           @con_status ? "Ok" : $pastel.yellow("*")
         end
@@ -52,9 +56,13 @@ module Ui
           @selected = false
         end
 
+        def plainname
+          $pastel.strip(@name)
+        end
+
         def name
           if @selected
-            $pastel.white.bold(@name)
+            $pastel.white.bold(@name) + $pastel.bold.yellow(">")
           else
             @name
           end
@@ -77,7 +85,7 @@ module Ui
         @context = context
         @model = Model::Pods.new(client)
         @columns = [
-          [:name,     45, :left],
+          [:name,     55, :left],
           [:namespace, 20, :left],
           [:con, 7, :left],
           [:vol, 5, :left],
@@ -90,6 +98,8 @@ module Ui
         @pods = []
         @dt = Time.now
         @selected = -1
+        @page = 0
+        @pattern = ''
       end
 
       # set the list of pods to render
@@ -121,7 +131,7 @@ module Ui
       end
 
       def render_lines
-        @pods.collect do |pod|
+        window.collect do |pod|
           pod.render(columns)
         end.join("\n") << "\n"
       end
@@ -142,7 +152,7 @@ module Ui
       end
 
       def scroll_to(name)
-        @selected = @pods.index {|p| $pastel.strip(p.name) == $pastel.strip(name) } || 0
+        @selected = @pods.index {|p| p.plainname == $pastel.strip(name) } || 0
         select!
       end
 
@@ -161,6 +171,11 @@ module Ui
           clear_selection!
 
           @selected = @selected + 1
+
+          if @selected > window_idx_last
+            next_page
+          end
+
           select!
         else
           false
@@ -173,6 +188,11 @@ module Ui
           clear_selection!
 
           @selected = @selected - 1
+
+          if @selected < window_idx_first
+            previous_page
+          end
+
           select!
         else
           false
@@ -181,9 +201,89 @@ module Ui
 
       # select the first node in the current node ordering
       def select_first!
-        @selected = 0
+        @selected = window_idx_first
         clear_selection!
         @pods[@selected].select!
+      end
+
+      def pane_height
+        TTY::Screen.height - 4 # leave space for columns + totals
+      end
+
+      # next page
+      def next_page
+        @page += 1 if @pods && (@page + 1) * pane_height < @pods.length
+        select_first!
+      end
+
+      # previous page
+      def previous_page
+        @page -= 1 if @page.positive?
+        select_first! if @selected > window_idx_last
+      end
+
+      # first page
+      def first_page
+        @page = 0
+        select_first!
+      end
+
+      def last_page
+        @page = @pods.length / pane_height
+        select_first!
+      end
+
+      def index
+        "#{$pastel.cyan(@page+1)}/#{@pods.length / pane_height + 1}"
+      end
+
+      # sort nodes by sort function - default is occupancy
+      def sort!(method)
+        if method == :containers_descending
+          @pods.sort!{|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
+          select_first!
+        end
+
+        if method == :containers_ascending
+          @pods.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
+          select_first!
+        end
+
+        if method == :node_name
+          @pods.sort!{|a, b| a.name <=> b.name }
+          select_first!
+        end
+      end
+
+      def filter!(pattern)
+        @pattern = pattern ? pattern.strip : nil
+        select_first!
+      end
+
+      # current displayable nodes post filter
+      def window
+        pods = filter
+        if pane_height > pods.length
+          pods
+        else
+          window_idx_last > pods.length ? pods[window_idx_first..-1] : pods[window_idx_first..window_idx_last]
+        end
+      end
+
+      def window_idx_first
+        @page * pane_height
+      end
+
+      def window_idx_last
+        window_idx_first + pane_height - 1
+      end
+
+      def filter
+        if @pattern
+          @pods.select{|f| /#{@pattern}/.match?(f.plainname) }
+        else
+          @pods
+        end
       end
     end
   end

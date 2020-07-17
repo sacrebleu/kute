@@ -244,23 +244,24 @@ module Ui
       # sort nodes by sort function - default is occupancy
       def sort!(method)
         if method == :pods_descending
-          @nodes.sort!{|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
+          window.sort!{|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
           select_first!
         end
 
         if method == :pods_ascending
-          @nodes.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
+          window.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
           select_first!
         end
 
         if method == :node_name
-          @nodes.sort!{|a, b| a.name <=> b.name }
+          window.sort!{|a, b| a.name <=> b.name }
           select_first!
         end
       end
 
       def filter!(pattern)
         @pattern = pattern ? pattern.strip : nil
+        @window = @pattern ? @nodes.select{|f| f.any_pods_like?(@pattern) } : @nodes
         select_first!
       end
 
@@ -309,7 +310,7 @@ module Ui
 
       # get the currently selected row
       def selected
-        @nodes.any?(&:selected?) ? @nodes.select(&:selected?).first : nil
+        window.any?(&:selected?) ? window.select(&:selected?).first : nil
       end
 
       def select!
@@ -327,6 +328,11 @@ module Ui
           clear_selection!
 
           @selected = @selected + 1
+
+          if @selected > window_idx_last
+            next_page
+          end
+
           select!
         else
           false
@@ -338,6 +344,11 @@ module Ui
         if @selected > 0
           clear_selection!
           @selected = @selected - 1
+
+          if @selected < window_idx_first
+            previous_page
+          end
+
           select!
         else
           false
@@ -346,9 +357,11 @@ module Ui
 
       # select the first node in the current node ordering
       def select_first!
-        @selected = 0
+        @selected = window_idx_first
+        puts "idx: #{@selected}"
         clear_selection!
-        @nodes[@selected].select!
+        window[@selected].select!
+        window[@selected].select!
       end
 
       def pane_height
@@ -358,20 +371,24 @@ module Ui
       # next page
       def next_page
         @page += 1 if @nodes && (@page + 1) * pane_height < @nodes.length
+        select_first!
       end
 
       # previous page
       def previous_page
         @page -= 1 if @page.positive?
+        select_first! if @selected > window_idx_last
       end
 
       # first page
       def first_page
         @page = 0
+        select_first!
       end
 
-      def last_age
+      def last_page
         @page = @nodes.length / pane_height
+        select_first!
       end
 
       def index
@@ -381,17 +398,21 @@ module Ui
       # current displayable nodes post filter
       def window
         nodes = filter
-        if pane_height > nodes.length
+        n = if pane_height > nodes.length
           nodes
         else
-          i = @page * pane_height
-          j = (@page + 1) * pane_height
-          j > nodes.length ? nodes[i..-1] : nodes[i..j]
+          window_idx_last > nodes.length ? nodes[window_idx_first..-1] : nodes[window_idx_first..window_idx_last]
         end
+        select_first!
+        n
       end
 
-      def filter
-        @pattern ? @nodes.select{|f| f.any_pods_like?(@pattern) } : @nodes
+      def window_idx_first
+        @page * pane_height
+      end
+
+      def window_idx_last
+        window_idx_first + pane_height - 1
       end
     end
   end

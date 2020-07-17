@@ -67,8 +67,10 @@ module Ui
             c_goto(0, 2)
             c
           rescue => e
+            spin_stop
             puts e.message
-            puts e.backtrace.join("\n")
+            puts e.backtrace.join("\n") if $settings[:verbose]
+            raise e
           end
         end
 
@@ -107,8 +109,10 @@ module Ui
 
       # handle keypress
       def handle(event)
-        if event.key.name == :alpha && event.value == 'q'
+        if event.value == 'q'
           puts "Exiting"
+          c_topleft
+          print cursor.clear_screen
           exit(1)
         end
       end

@@ -38,6 +38,9 @@ VERSION = '0.0.6'
 
 $settings = {}
 
+EXIT_GENERAL=1
+EXIT_RENDER_ERROR=2
+
 # default to env, or dev profile if nothing is specified
 $settings[:profile] = ENV['AWS_PROFILE'] if ENV['AWS_PROFILE']
 $settings[:profile] ||= 'default'
@@ -46,6 +49,7 @@ $settings[:profile] ||= 'default'
 $settings[:cluster] = `cat ${HOME}/.kube/config | grep current-context | cut -d ' ' -f2`.chomp
 $settings[:resource] = :nodes
 $settings[:cloudwatch] = false
+$settings[:verbose] = false
 
 $pastel = Pastel.new
 

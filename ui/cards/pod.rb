@@ -28,7 +28,7 @@ module Ui
       end
 
       def reload!
-        @pod = @model.describe(@source.name, @source.namespace)
+        @pod = @model.describe(@source.plainname, @source.namespace)
       end
 
       def status

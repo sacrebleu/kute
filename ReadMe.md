@@ -1,6 +1,6 @@
 ## kute
 
-###### version 0.0.6
+###### version 0.0.7
 
 ###### TODO
 
@@ -75,7 +75,15 @@ The pod listing displays:
 If there is an issue with any of the containers (i.e. none are state running or state terminated with exit code 0) then
 that pod is highlighted in yellow, and the status is set to '*'
  
-You can scroll down to select a pod, then hit  `:enter` or `:right` to drill down into it.  Hitting `:left` will return 
+ 
+###### POds pane navigation:
+
+* `^` : Go to the first page of pods
+* `space` : Go to the next page of pods
+* `b` : Go to the previous page of pods
+* `$` : Go to the last page of pods 
+ 
+You can scroll down to select a pod, then hit  `enter` or `right` to drill down into it.  Hitting `left` will return 
 you to the node listing.
 
 ![Kute can display the state of a pod's containers](./docs/details.png "container states for a pod")

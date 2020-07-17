@@ -79,6 +79,7 @@ module Ui
             @pattern = (reader.read_line "search pattern:").strip
             # @pattern = pattern.strip
             model.filter!(@pattern)
+            model.select_first!
             register
           rescue => e
             pp e.backtrace
