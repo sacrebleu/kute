@@ -1,13 +1,13 @@
 # require "spec_helper"
-require_relative '../ui/layout/pane'
+require_relative '../ui/pane'
 
-describe 'Layout::Pane' do
+describe 'Ui::Layout::Pane' do
   let(:data) { generate_data(20) }
   let(:partial_data)   { generate_data(15) } # test partial
   let(:page_plus_one)  { generate_data(21) } # test boundary condition postitive
   let(:page_minus_one) { generate_data(19) } # test boundary condition negative
 
-  let(:subject) { Layout::Pane.new(data, 10) }
+  let(:subject) { Ui::Pane.new(data, 10) }
 
   context 'when unfiltered' do
     it 'reports the list of items' do
@@ -231,20 +231,11 @@ describe 'Layout::Pane' do
     end
   end
 
-  class MockRow
+  class MockRow < Ui::Pane::SelectableRow
     attr_reader :selected, :index, :name
     def initialize(idx)
       @index = idx
-      @selected = false
       @name = "row #{idx}"
-    end
-
-    def deselect!
-      @selected = false
-    end
-
-    def select!
-      @selected = true
     end
   end
 end

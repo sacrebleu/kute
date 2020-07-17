@@ -1,5 +1,5 @@
-# layout module
-module Layout
+module Ui
+  # layout module
   # paginator because I keep having to reimplement this and keep making bugs
   class Pane
 
@@ -7,14 +7,21 @@ module Layout
 
     # generate a new paginator of length data.length and rows h
     def initialize(data, h = TTY::Screen.height)
-      @data = data
       @rows = h
+      @selected = 0
+      update!(data)
+    end
+
+    # send a new dataset through
+    def update!(data)
+      @data = data
       @filtered = data
-      # @view = []
       @page = 1
       @pages = (@filtered.length - 1) / @rows + 1
+    end
 
-      @selected = nil
+    def sort!(&block)
+      @data.sort!(&block)
     end
 
     # recalculate all internal values
@@ -62,7 +69,7 @@ module Layout
     # row level methods for interacting with data items in a particular viewset
     # select the next item in the data list
     def next_row!
-      step { @selected += 1 if @selected < @filtered.length }
+      step { @selected += 1 if @selected < @filtered.length - 1 }
     end
 
     # select the previous item in the data list
@@ -96,7 +103,7 @@ module Layout
 
     private
     def step(&block)
-      selected.deselect! if selected
+      @data.map(&:deselect!)
       yield if block_given?
       recalculate!
       selected.select! if selected
@@ -109,15 +116,23 @@ module Layout
     # select the next page
     def next!
       @page += 1 if @page < @pages
+      # pp @page, rows, first_for_page
+      step { @selected = first_for_page }
     end
 
     def goto!(page)
       @page = page if page&.positive? && page <= @pages
+      step { @selected = first_for_page }
     end
 
     # select the previous page
     def previous!
       @page -= 1 if @page > 1
+      step { @selected = first_for_page }
+    end
+
+    def first_for_page
+      (@page - 1 ) * rows
     end
 
     # select the first page
@@ -129,6 +144,22 @@ module Layout
     def last!
       @page = @pages
     end
-  end
 
+    # interface class for users
+    class SelectableRow
+      attr_reader :selected
+
+      def initialize
+        @selected = false
+      end
+
+      def select!
+        @selected = true
+      end
+
+      def deselect!
+        @selected = false
+      end
+    end
+  end
 end

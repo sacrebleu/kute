@@ -4,7 +4,7 @@ module Ui
     class Nodes
 
       # models a row in the report
-      class Row
+      class Row < Ui::Pane::SelectableRow
         # attributes that don't match a column name won't be rendered
         # attr_reader :node, :region, :version
         attr_reader :region, :version, :age
@@ -28,7 +28,6 @@ module Ui
           @disk = instance[:disk] || 0
           @mem = instance[:memory] || 0
           @container_health = node[:container_health]
-          @selected = false
         end
 
         def any_pods_like?(pattern)
@@ -42,17 +41,8 @@ module Ui
           end
         end
 
-        def select!
-          # puts "selected #{@name}"
-          @selected = true
-        end
-
-        def deselect!
-          @selected = false
-        end
-
         def selected?
-          @selected
+          selected
         end
 
         # render an ansi pod occupancy string for the node
@@ -72,7 +62,7 @@ module Ui
         end
 
         def name
-          if @selected
+          if selected?
             $pastel.white.bold(@name) + $pastel.bold.yellow(">")
           else
             @container_health ? @name : $pastel.yellow(@name)
@@ -222,8 +212,9 @@ module Ui
           [:mem,      4],
           [:disk,     5]
         ].map { |e| Ui::Layout::Column.new(*e) }.freeze
+
         @nodes = []
-        @selected = -1
+        @pane = Ui::Pane.new(@nodes, TTY::Screen.height - 5)
         @summary = {}
         @page = 0
         @pattern = ''
@@ -235,8 +226,8 @@ module Ui
         reload! if fetch
         sort!(order)
 
-        select! if @selected > -1
-        select_first! unless selected
+        @pane.update!(@nodes) if fetch
+        @pane.first_row! if fetch
 
         @dt = Time.now
       end
@@ -244,25 +235,24 @@ module Ui
       # sort nodes by sort function - default is occupancy
       def sort!(method)
         if method == :pods_descending
-          window.sort!{|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
-          select_first!
+          @pane.sort! {|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
+          @pane.first_row!
         end
 
         if method == :pods_ascending
-          window.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
-          select_first!
+          @pane.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
+          @pane.first_row!
         end
 
         if method == :node_name
-          window.sort!{|a, b| a.name <=> b.name }
-          select_first!
+          @pane.sort!{|a, b| a.name <=> b.name }
+          @pane.first_row!
         end
       end
 
       def filter!(pattern)
-        @pattern = pattern ? pattern.strip : nil
-        @window = @pattern ? @nodes.select{|f| f.any_pods_like?(@pattern) } : @nodes
-        select_first!
+        @pattern = pattern
+        @pane.filter! { |f| f.any_pods_like?(@pattern) }
       end
 
       # reload upstream data
@@ -288,8 +278,8 @@ module Ui
       end
 
       def render_lines
-        window.collect do |node|
-          node.render(@columns)
+        @pane.view.collect do |row|
+          row.render(@columns)
         end.join("\n") << "\n"
       end
 
@@ -310,109 +300,45 @@ module Ui
 
       # get the currently selected row
       def selected
-        window.any?(&:selected?) ? window.select(&:selected?).first : nil
-      end
-
-      def select!
-        @nodes[@selected].select!
-      end
-
-      # reset all node selection flags to false
-      def clear_selection!
-        @nodes.each(&:deselect!)
+        @pane.selected
       end
 
       # return true if the next node was selected, false otherwise
       def select_next!
-        if selected && @selected < @nodes.length - 1
-          clear_selection!
-
-          @selected = @selected + 1
-
-          if @selected > window_idx_last
-            next_page
-          end
-
-          select!
-        else
-          false
-        end
+        @pane.next_row!
       end
 
       # return true if the previous node was selected, false otherwise
       def select_previous!
-        if @selected > 0
-          clear_selection!
-          @selected = @selected - 1
-
-          if @selected < window_idx_first
-            previous_page
-          end
-
-          select!
-        else
-          false
-        end
+        @pane.previous_row!
       end
 
       # select the first node in the current node ordering
       def select_first!
-        @selected = window_idx_first
-        puts "idx: #{@selected}"
-        clear_selection!
-        window[@selected].select!
-        window[@selected].select!
-      end
-
-      def pane_height
-        TTY::Screen.height - 5 # leave space for columns + totals
+        @pane.first_row!
       end
 
       # next page
       def next_page
-        @page += 1 if @nodes && (@page + 1) * pane_height < @nodes.length
-        select_first!
+        @pane.next!
       end
 
       # previous page
       def previous_page
-        @page -= 1 if @page.positive?
-        select_first! if @selected > window_idx_last
+        @pane.previous!
       end
 
       # first page
       def first_page
-        @page = 0
-        select_first!
+        @pane.first!
       end
 
       def last_page
-        @page = @nodes.length / pane_height
-        select_first!
+        @pane.last!
       end
 
       def index
-        "#{$pastel.cyan(@page+1)}/#{@nodes.length / pane_height + 1}"
-      end
-
-      # current displayable nodes post filter
-      def window
-        nodes = filter
-        n = if pane_height > nodes.length
-          nodes
-        else
-          window_idx_last > nodes.length ? nodes[window_idx_first..-1] : nodes[window_idx_first..window_idx_last]
-        end
-        select_first!
-        n
-      end
-
-      def window_idx_first
-        @page * pane_height
-      end
-
-      def window_idx_last
-        window_idx_first + pane_height - 1
+        @pane.display_page
       end
     end
   end

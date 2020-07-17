@@ -21,6 +21,7 @@ require 'pp'
 require_relative 'log'
 require_relative 'cfg/kubeconfig'
 
+require_relative 'ui/pane'
 require_relative 'ui/cards/nodes'
 require_relative 'ui/cards/pods'
 require_relative 'ui/cards/pod'
