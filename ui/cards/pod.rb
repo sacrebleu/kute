@@ -12,6 +12,10 @@ module Ui
         @selected = -1
       end
 
+      def color
+        @color ||= Pastel.new
+      end
+
       # time of the last data refresh
       def last_refresh
         @dt
@@ -28,24 +32,24 @@ module Ui
       end
 
       def reload!
-        @pod = @model.describe(@source.plainname, @source.namespace)
+        @pod = @model.describe(@source.name, @source.namespace)
       end
 
       def status
         s = @pod.status.phase
         if s == 'Failed'
-          $pastel.bold.red(s)
+          color.bold.red(s)
         elsif s == 'Unknown'
-          $pastel.bold.red(s)
+          color.bold.red(s)
         elsif s == 'Pending'
-          $pastel.bold.yellow(s)
+          color.bold.yellow(s)
         else
           s
         end
       end
 
       def conditions
-        pod.status.conditions.map {|c| c[:type] ? "+#{$pastel.green(c[:type].to_s)}" : "-#{pastel.red(c[:type].to_s)}" }.join(' ')
+        pod.status.conditions.map {|c| c[:type] ? "+#{color.green(c[:type].to_s)}" : "-#{pastel.red(c[:type].to_s)}" }.join(' ')
       end
 
       def _rj(s, w)
@@ -58,15 +62,15 @@ module Ui
 
       def container_status(cs)
         if cs.state.running
-          "#{$pastel.bold.white("Running")} since #{cs.state.running.startedAt} [restarts: #{cs.restartCount}]"
+          "#{color.bold.white("Running")} since #{cs.state.running.startedAt} [restarts: #{cs.restartCount}]"
         elsif cs.state.terminated
           if cs.state.terminated.exitCode > 0
-            "#{$pastel.bold.red("Terminated")} (#{cs.state.terminated.reason}) at #{cs.state.terminated.finishedAt}"
+            "#{color.bold.red("Terminated")} (#{cs.state.terminated.reason}) at #{cs.state.terminated.finishedAt}"
           else
-            "#{$pastel.bold.white("Terminated")} (#{cs.state.terminated.reason}) at #{cs.state.terminated.finishedAt}"
+            "#{color.bold.white("Terminated")} (#{cs.state.terminated.reason}) at #{cs.state.terminated.finishedAt}"
           end
         else
-          "#{$pastel.bold.yellow("Waiting")} (#{cs.state.waiting.reason}) [restarts: #{cs.restartCount}]"
+          "#{color.bold.yellow("Waiting")} (#{cs.state.waiting.reason}) [restarts: #{cs.restartCount}]"
         end
       end
 
@@ -84,7 +88,7 @@ module Ui
 
         cnt = pod.spec.containers.map do |c|
           # name = c[:name][0..cnw-1]
-          name = statuses[c[:name]][:ready] ? $pastel.green(c[:name][0..cnw-1]) : $pastel.yellow(c[:name][0..cnw-1])
+          name = statuses[c[:name]][:ready] ? color.green(c[:name][0..cnw-1]) : color.yellow(c[:name][0..cnw-1])
           s = statuses[c[:name]]
 
           # state = s[:state].to_h.keys.first
@@ -92,9 +96,9 @@ module Ui
 
           <<~CONT
           #{_lj(name, cnw)} #{container_status(s)}
-          #{_rj('image:', cnw)} #{c[:image]} (pull: #{$pastel.cyan(c[:imagePullPolicy])})
+          #{_rj('image:', cnw)} #{c[:image]} (pull: #{color.cyan(c[:imagePullPolicy])})
           #{_rj('ports:', cnw)} #{c[:ports]&.map{|p| "#{p[:protocol]}:#{p[:containerPort]}"}&.join(', ')}
-          #{_rj('mounts:', cnw)} #{c[:volumeMounts].map{|v| "#{v[:name]} -> #{v[:mountPath]}#{v[:readOnly]?" [ro]":$pastel.yellow(" [w+]")}"}&.join("\n #{_lj(' ', cnw)}")}
+          #{_rj('mounts:', cnw)} #{c[:volumeMounts].map{|v| "#{v[:name]} -> #{v[:mountPath]}#{v[:readOnly]?" [ro]":color.yellow(" [w+]")}"}&.join("\n #{_lj(' ', cnw)}")}
           CONT
         end.join("\n")
 
@@ -103,16 +107,16 @@ module Ui
 
         out = <<~DONE
         
-          Pod:        #{pod.metadata.namespace}/#{$pastel.white(pod.metadata.name)} [#{$pastel.cyan(pod.status.podIP)}]
+          Pod:        #{pod.metadata.namespace}/#{color.white(pod.metadata.name)} [#{color.cyan(pod.status.podIP)}]
           Status:     #{status} [#{conditions}]
           
-          Host Node:  #{pod.status.hostIP} (#{$pastel.blue(pod.spec.nodeName)})    
+          Host Node:  #{pod.status.hostIP} (#{color.blue(pod.spec.nodeName)})    
           Generator:  #{_rj(generator, w)}   Service Account: #{pod.spec.serviceAccount}
-          Scheduler:  #{_rj(pod.spec.schedulerName, w)}           Restart: #{$pastel.cyan(pod.spec.restartPolicy)}   Grace period: #{$pastel.cyan(pod.spec.terminationGracePeriodSeconds)}s  
+          Scheduler:  #{_rj(pod.spec.schedulerName, w)}           Restart: #{color.cyan(pod.spec.restartPolicy)}   Grace period: #{color.cyan(pod.spec.terminationGracePeriodSeconds)}s  
         
-          labels:     #{pod.metadata.labels.to_h.reject{|k,_| ["pod-template-hash", :version].include?(k)}.map{|k,v| "#{k}=#{$pastel.cyan(v)}"}.join("\n            ")}
-          annotate:   #{pod.metadata.annotations.to_h.reject{|k,_| [:"kubernetes.io/psp"].include?(k)}.map{|k,v| "#{k}=#{$pastel.cyan(v)}"}.join("\n            ")}
-          tolerate:   #{pod.spec.tolerations.map {|t| "#{t.operator} #{t.key} -> #{$pastel.bold.white(t.effect)} #{t.tolerationSeconds ? "#{t.tolerationSeconds}s" : "" }"}.join("\n            ")}
+          labels:     #{pod.metadata.labels.to_h.reject{|k,_| ["pod-template-hash", :version].include?(k)}.map{|k,v| "#{k}=#{color.cyan(v)}"}.join("\n            ")}
+          annotate:   #{pod.metadata.annotations.to_h.reject{|k,_| [:"kubernetes.io/psp"].include?(k)}.map{|k,v| "#{k}=#{color.cyan(v)}"}.join("\n            ")}
+          tolerate:   #{pod.spec.tolerations.map {|t| "#{t.operator} #{t.key} -> #{color.bold.white(t.effect)} #{t.tolerationSeconds ? "#{t.tolerationSeconds}s" : "" }"}.join("\n            ")}
 
           containers:
           #{cnt}

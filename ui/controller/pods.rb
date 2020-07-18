@@ -28,8 +28,8 @@ module Ui
       # node commands
       def prompt
         s = [
-          "[order: #containers (#{$pastel.cyan.bold("a")}sc/#{$pastel.magenta.bold("d")}esc), pod #{$pastel.cyan('n')}ame]",
-          "[#{$pastel.cyan.bold("q")}uit]"
+          "[order: #containers (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), pod #{color.cyan('n')}ame]",
+          "[#{color.cyan.bold("q")}uit]"
         ].join(' ')
         "#{s}> "
       end
@@ -40,6 +40,7 @@ module Ui
       end
 
       def go_pod_details(pod)
+        pp pod
         app.pod_details.for_pod(pod)
         app.select(:pod_details)
         done!

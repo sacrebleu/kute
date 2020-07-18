@@ -4,13 +4,14 @@ module Ui
     class Pods
 
       # models a row in the report
-      class Row
+      class Row < Ui::Pane::SelectableRow
         # attributes that don't match a column name won't be rendered
         # attr_reader :node, :region, :version
         attr_reader :region, :version, :age, :namespace, :serviceaccount,
-                    :con, :vol, :ip, :rst
+                    :con, :vol, :ip, :rst, :color, :name
 
-        def initialize(pod)
+        def initialize(pod, color)
+          @color = color
           @name = pod[:name]
           @namespace = pod[:namespace]
           @con = containers(pod)
@@ -21,18 +22,17 @@ module Ui
           @ports = pod[:ports]
           @serviceaccount = pod[:serviceAccount]
           @ip = pod[:ip]
-          @selected = false
         end
 
         def containers(pod)
           pod[:running] < pod[:containers] ?
-            "#{$pastel.yellow(pod[:running])}/#{pod[:containers]}" : "#{pod[:running]}/#{pod[:containers]}"
+            "#{color.yellow(pod[:running])}/#{pod[:containers]}" : "#{pod[:running]}/#{pod[:containers]}"
         end
 
         def rejigger(columns)
           columns.each do |column|
             m = column.name
-            column.rejigger($pastel.strip(send(m)).length + 1)
+            column.rejigger(color.strip(send(m)).length + 1)
           end
         end
 
@@ -41,39 +41,20 @@ module Ui
         end
 
         def status
-          @con_status ? "Ok" : $pastel.yellow("*")
-        end
-
-        def select!
-          @selected = true
-        end
-
-        def selected?
-          @selected
-        end
-
-        def deselect!
-          @selected = false
-        end
-
-        def plainname
-          $pastel.strip(@name)
-        end
-
-        def name
-          if @selected
-            $pastel.white.bold(@name) + $pastel.bold.yellow(">")
-          else
-            @name
-          end
+          @con_status ? "Ok" : color.yellow("*")
         end
 
         # layout columns
         def render(columns)
+          # pp columns
           output = ''
           columns.each do |column|
             m = column.name
-            output << column.render(send(m))
+            if m == :name && @selected
+              output << column.render(color.white.bold(@name) + color.bold.yellow(">"))
+            else
+              output << column.render(send(m))
+            end
           end
           output
         end
@@ -96,9 +77,8 @@ module Ui
           [:ip, 15, :left]
         ].map { |e| Ui::Layout::Column.new(*e) }.freeze
         @pods = []
+        @pane = Ui::Pane.new(@pods, pane_height)
         @dt = Time.now
-        @selected = -1
-        @page = 0
         @pattern = ''
       end
 
@@ -111,8 +91,8 @@ module Ui
       def refresh(fetch, order=:default)
         reload! if fetch
 
-        select! if @selected > -1
-        select_first! unless selected
+        @pane.update!(@pods) if fetch
+        @pane.first_row! if fetch
 
         @dt = Time.now
       end
@@ -120,19 +100,19 @@ module Ui
       # reload upstream data
       def reload!
         @pods = @model.pods(@node).map do |pod|
-          r = Row.new(pod)
+          r = Row.new(pod, @pane.color)
           r.rejigger(columns)
           r
         end
       end
 
       def render_header
-        $pastel.bold.white(columns.collect(&:title).join('') << "\n")
+        @pane.color.bold.white(columns.collect(&:title).join('') << "\n")
       end
 
       def render_lines
-        window.collect do |pod|
-          pod.render(columns)
+        @pane.view.collect do |row|
+          row.render(@columns)
         end.join("\n") << "\n"
       end
 
@@ -148,62 +128,27 @@ module Ui
 
       # get the currently selected row
       def selected
-        @pods.any?(&:selected?) ? @pods.select(&:selected?).first : nil
+        @pane.selected
       end
 
+      # scroll to the named pod
       def scroll_to(name)
-        @selected = @pods.index {|p| p.plainname == $pastel.strip(name) } || 0
-        select!
-      end
-
-      def select!
-        @pods[@selected].select!
-      end
-
-      # reset all node selection flags to false
-      def clear_selection!
-        @pods.each(&:deselect!)
+        @pane.goto_row!(@pane.find(:name, name))
       end
 
       # return true if the next node was selected, false otherwise
       def select_next!
-        if selected && @selected < @pods.length - 1
-          clear_selection!
-
-          @selected = @selected + 1
-
-          if @selected > window_idx_last
-            next_page
-          end
-
-          select!
-        else
-          false
-        end
+        @pane.next_row!
       end
 
       # return true if the previous node was selected, false otherwise
       def select_previous!
-        if @selected > 0
-          clear_selection!
-
-          @selected = @selected - 1
-
-          if @selected < window_idx_first
-            previous_page
-          end
-
-          select!
-        else
-          false
-        end
+        @pane.previous_row!
       end
 
       # select the first node in the current node ordering
       def select_first!
-        @selected = window_idx_first
-        clear_selection!
-        @pods[@selected].select!
+        @pane.first_row!
       end
 
       def pane_height
@@ -212,78 +157,45 @@ module Ui
 
       # next page
       def next_page
-        @page += 1 if @pods && (@page + 1) * pane_height < @pods.length
-        select_first!
+        @pane.next!
       end
 
       # previous page
       def previous_page
-        @page -= 1 if @page.positive?
-        select_first! if @selected > window_idx_last
+        @pane.previous!
       end
 
       # first page
       def first_page
-        @page = 0
-        select_first!
+        @pane.first!
       end
 
       def last_page
-        @page = @pods.length / pane_height
-        select_first!
+        @pane.last!
       end
 
       def index
-        "#{$pastel.cyan(@page+1)}/#{@pods.length / pane_height + 1}"
+        @pane.display_page
       end
 
       # sort nodes by sort function - default is occupancy
       def sort!(method)
         if method == :containers_descending
-          @pods.sort!{|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
-          select_first!
+          @pane.sort! {|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
         end
 
         if method == :containers_ascending
-          @pods.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
-          select_first!
+          @pane.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
         end
 
         if method == :node_name
-          @pods.sort!{|a, b| a.name <=> b.name }
-          select_first!
+          @pane.sort!{|a, b| a.name <=> b.name }
         end
       end
 
       def filter!(pattern)
-        @pattern = pattern ? pattern.strip : nil
-        select_first!
-      end
-
-      # current displayable nodes post filter
-      def window
-        pods = filter
-        if pane_height > pods.length
-          pods
-        else
-          window_idx_last > pods.length ? pods[window_idx_first..-1] : pods[window_idx_first..window_idx_last]
-        end
-      end
-
-      def window_idx_first
-        @page * pane_height
-      end
-
-      def window_idx_last
-        window_idx_first + pane_height - 1
-      end
-
-      def filter
-        if @pattern
-          @pods.select{|f| /#{@pattern}/.match?(f.plainname) }
-        else
-          @pods
-        end
+        @pattern = pattern
+        @pane.filter! { |pod| /#{@pattern}/.match?(pod.name) }
       end
     end
   end

@@ -28,8 +28,8 @@ module Ui
       # node commands
       def prompt
         s = [
-          "#{$pastel.cyan.bold("b")}ack",
-          "#{$pastel.cyan.bold("q")}uit"
+          "#{color.cyan.bold("b")}ack",
+          "#{color.cyan.bold("q")}uit"
         ].join(' ')
 
         "#{model.pod.metadata.namespace}/#{model.pod.metadata.name}: #{s}> "

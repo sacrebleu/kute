@@ -7,7 +7,11 @@ describe 'Ui::Layout::Pane' do
   let(:page_plus_one)  { generate_data(21) } # test boundary condition postitive
   let(:page_minus_one) { generate_data(19) } # test boundary condition negative
 
-  let(:subject) { Ui::Pane.new(data, 10) }
+  let(:subject) {
+    s = Ui::Pane.new(data, 10)
+    allow(s.color).to receive(:cyan).with(anything) { |arg| arg }
+    s
+  }
 
   context 'when unfiltered' do
     it 'reports the list of items' do

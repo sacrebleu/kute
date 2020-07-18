@@ -1,3 +1,5 @@
+require 'pastel'
+
 module Ui
   # layout module
   # paginator because I keep having to reimplement this and keep making bugs
@@ -10,6 +12,10 @@ module Ui
       @rows = h
       @selected = 0
       update!(data)
+    end
+
+    def color
+      @pastel ||= ::Pastel.new
     end
 
     # send a new dataset through
@@ -41,7 +47,7 @@ module Ui
 
     # display page n/N
     def display_page
-      "page #{@page}/#{@pages}"
+      "page #{color.cyan(@page)}/#{@pages}"
     end
 
     # get the full item list
@@ -118,6 +124,11 @@ module Ui
       @page += 1 if @page < @pages
       # pp @page, rows, first_for_page
       step { @selected = first_for_page }
+    end
+
+    # find the first element in the data list with the field `name` matching `value`
+    def find(name, value)
+      @filtered.each_index.detect { |e| e.send(name) == value }
     end
 
     def goto!(page)

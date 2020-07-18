@@ -52,7 +52,7 @@ $settings[:resource] = :nodes
 $settings[:cloudwatch] = false
 $settings[:verbose] = false
 
-$pastel = Pastel.new
+# $pastel = Pastel.new
 
 OptionParser.new do |opts|
   opts.banner = "kute [#{VERSION}] \nusage: kute.rb [options]"

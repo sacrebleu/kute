@@ -7,11 +7,12 @@ module Ui
       class Row < Ui::Pane::SelectableRow
         # attributes that don't match a column name won't be rendered
         # attr_reader :node, :region, :version
-        attr_reader :region, :version, :age
+        attr_reader :region, :version, :age, :color
 
-        def initialize(node, instance)
+        def initialize(node, instance, color)
           @name = node[:name]
 
+          @color = color
           dur = (DateTime.now - DateTime.parse(node[:age]))*60*60*24
           @age = Ui::Util::Duration.human(dur)
           @region = node[:region]
@@ -37,7 +38,7 @@ module Ui
         def rejigger(columns)
           columns.each do |column|
             m = column.name
-            column.rejigger($pastel.strip(send(m)).length + 2)
+            column.rejigger(color.strip(send(m)).length + 2)
           end
         end
 
@@ -49,9 +50,9 @@ module Ui
         def pods
           s = format('%d/%d', @pods[0], @pods[1])
           if  @pods[2] > 0.9
-            $pastel.red(s)
+            color.red(s)
           elsif @pods[2] > 0.8
-            $pastel.yellow(s)
+            color.yellow(s)
           else
             s
           end
@@ -63,9 +64,9 @@ module Ui
 
         def name
           if selected?
-            $pastel.white.bold(@name) + $pastel.bold.yellow(">")
+            color.white.bold(@name) + color.bold.yellow(">")
           else
-            @container_health ? @name : $pastel.yellow(@name)
+            @container_health ? @name : color.yellow(@name)
           end
         end
 
@@ -77,9 +78,9 @@ module Ui
         def volumes
           s = format('%d/%d', @volumes[0], @volumes[1])
           if  @volumes[2] > 0.9
-            $pastel.red s
+            color.red s
           elsif @volumes[2] > 0.8
-            $pastel.yellow s
+            color.yellow s
           else
             s
           end
@@ -88,13 +89,13 @@ module Ui
         # render an ansi status string for the node
         def status
           if @status['Ready'] != 'True'
-            $pastel.red 'X'
+            color.red 'X'
           elsif @status['MemoryPressure'] != 'False'
-            $pastel.yellow 'Mem'
+            color.yellow 'Mem'
           elsif @status['DiskPressure'] != 'False'
-            $pastel.yello 'Dsk'
+            color.yello 'Dsk'
           elsif @status['PIDPressure'] != 'False'
-            $pastel.yellow 'Pid'
+            color.yellow 'Pid'
           else
             'Ok'
           end
@@ -103,11 +104,11 @@ module Ui
         # report on node taints
         def taints
           res = if @taints&.any?{|s| s.start_with?('NodeWithImpaired') }
-                  $pastel.yellow 'Impaired'
+                  color.yellow 'Impaired'
                 elsif @taints&.any?{|s| s.end_with?('PreferNoSchedule') }
-                  $pastel.cyan 'PrefNoSchedule'
+                  color.cyan 'PrefNoSchedule'
                 elsif @taints&.any?{|s| s.end_with?('NoSchedule') }
-                  $pastel.red 'NoSchedule'
+                  color.red 'NoSchedule'
                 else
                   ''
                 end
@@ -117,7 +118,7 @@ module Ui
         # report on any affinity label that's been set
         def affinity
           if @affinity == 'monitoring'
-            $pastel.bright_cyan @affinity
+            color.bright_cyan @affinity
           else
             @affinity
           end
@@ -125,11 +126,11 @@ module Ui
 
         def threshold(v, thresholds = { red: 90, yellow: 75, bold: 50})
           if v > thresholds[:red]
-            $pastel.bold.on_red v.to_s
+            color.bold.on_red v.to_s
           elsif v > thresholds[:yellow]
-            $pastel.bright_yellow v.to_s
+            color.bright_yellow v.to_s
           elsif v > thresholds[:bold]
-            $pastel.bright_white v.to_s
+            color.bright_white v.to_s
           else
             v.to_s
           end
@@ -216,7 +217,6 @@ module Ui
         @nodes = []
         @pane = Ui::Pane.new(@nodes, TTY::Screen.height - 5)
         @summary = {}
-        @page = 0
         @pattern = ''
 
         @dt = Time.now
@@ -260,7 +260,7 @@ module Ui
         cwi = @instances.instances
         t_n = @model.nodes
         @nodes = t_n.map do |node|
-          r = Row.new(node, cwi ? cwi[node[:name]] : {} )
+          r = Row.new(node, cwi ? cwi[node[:name]] : {} , @pane.color)
           r.rejigger(@columns)
           r
         end
@@ -274,7 +274,7 @@ module Ui
       end
 
       def render_header
-        @columns.collect(&:title).join('') << "\n"
+        @pane.color.bold.white(@columns.collect(&:title).join('') << "\n")
       end
 
       def render_lines

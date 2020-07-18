@@ -39,9 +39,11 @@ module Ui
 
     # encode justifier logic
     class Justifier
+      COLOR = Pastel.new
+
       def self.ljust(source, width)
         if source
-          u = $pastel.strip(source).length
+          u = COLOR.strip(source).length
           w = width - u
           raise "[#{source}]:#{u} exceeds column width #{width}" if w < 1
         else
@@ -54,7 +56,7 @@ module Ui
 
       def self.rjust(source, width)
         if source
-          u = $pastel.strip(source).length
+          u = COLOR.strip(source).length
           w = width - u
           raise "[#{source}]:#{u} exceeds column width #{width}" if w < 1
         else

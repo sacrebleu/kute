@@ -24,8 +24,8 @@ module Ui
       # node commands
       def prompt
         s = [
-          "[order: #pods (#{$pastel.cyan.bold("a")}sc/#{$pastel.magenta.bold("d")}esc), #{$pastel.cyan('n')}ode name]",
-          "[#{$pastel.cyan.bold("q")}uit]"
+          "[order: #pods (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), #{color.cyan('n')}ode name]",
+          "[#{color.cyan.bold("q")}uit]"
         ].join(' ')
         "#{s}> "
       end

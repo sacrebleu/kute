@@ -13,6 +13,10 @@ module Ui
         register
       end
 
+      def color
+        @pastel ||= Pastel.new
+      end
+
       def register
         @reader.on(:keypress) { |event| handle(event) unless event.nil? }
       end
@@ -27,7 +31,7 @@ module Ui
       end
 
       def spin_start
-        @spinner = TTY::Spinner.new("[#{$pastel.green($settings[:profile])}] #{$pastel.cyan(@app.context['name'])} :spinner",
+        @spinner = TTY::Spinner.new("[#{color.green($settings[:profile])}] #{color.cyan(@app.context['name'])} :spinner",
                                     hide_cursor: true, clear: false, success_mark: '')
         @spinner.auto_spin
       end

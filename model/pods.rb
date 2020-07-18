@@ -32,7 +32,7 @@ module Model
     end
 
     def describe(pod, namespace)
-      @client.get_pod $pastel.strip(pod), $pastel.strip(namespace)
+      @client.get_pod pod, namespace
     end
   end
 end
