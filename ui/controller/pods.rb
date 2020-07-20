@@ -40,9 +40,8 @@ module Ui
       end
 
       def go_pod_details(pod)
-        pp pod
-        app.pod_details.for_pod(pod)
         app.select(:pod_details)
+        app.pod_details.for_pod(pod)
         done!
       end
 

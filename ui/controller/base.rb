@@ -10,7 +10,6 @@ module Ui
         @app = console
         @buffer = ""
         @reader = TTY::Reader.new
-        register
       end
 
       def color

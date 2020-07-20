@@ -36,10 +36,9 @@ module Ui
       end
 
       def go_pods(pod)
+        app.select(:pods)
         app.pods.for_node(pod.spec.nodeName)
         app.pods.scroll_to(pod.metadata.name)
-        app.select(:pods)
-
         done!
       end
 
@@ -58,7 +57,7 @@ module Ui
         end
 
         if evt.value == 'd'
-          pp model.pod
+          # pp model.pod
           sleep(5)
         end
 

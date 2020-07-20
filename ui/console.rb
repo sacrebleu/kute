@@ -43,7 +43,9 @@ module Ui
     end
 
     def select(key)
+      @cards[@selected]&.deregister
       @selected = @cards[key] ? key : :help
+      @cards[@selected]&.register
       render
     end
 
