@@ -31,8 +31,8 @@ module Ui
       end
 
       def go_pods(node)
-        app.select(:pods)
         app.pods.for_node(node)
+        app.select(:pods)
         done!
       end
 

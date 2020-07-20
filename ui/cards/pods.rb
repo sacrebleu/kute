@@ -90,7 +90,6 @@ module Ui
 
       def refresh(fetch, order=:default)
         reload! if fetch
-
         @pane.update!(@pods) if fetch
         @pane.first_row! if fetch
 
