@@ -1,7 +1,7 @@
 # generates a cli output of the nodes of an eks cluster
 module Ui
   module Cards
-    class Nodes
+    class Nodes < Base
 
       # models a row in the report
       class Row < Ui::Pane::SelectableRow
@@ -23,12 +23,16 @@ module Ui
                       node[:volume_count].to_f / node[:capacity][:ebs_volumes].to_f ]
           @status = node[:status]
           @taints = node[:taints]
-          @affinity = node[:labels][:'kubernetes.io/affinity'] || ''
+          @affinity = node_affinity(node)
           @version = node[:kubeletVersion]
           @cpu = instance[:cpu] || 0
           @disk = instance[:disk] || 0
           @mem = instance[:memory] || 0
           @container_health = node[:container_health]
+        end
+
+        def node_affinity(node)
+          node[:labels][:'kubernetes.io/affinity'] || node[:labels][:'kubernetes.io/Affinity'] || ''
         end
 
         def any_pods_like?(pattern)
@@ -38,7 +42,8 @@ module Ui
         def rejigger(columns)
           columns.each do |column|
             m = column.name
-            column.rejigger(color.strip(send(m)).length + 2)
+            v = send(m)
+            column.rejigger(color.strip(v).length + 2) if v
           end
         end
 
@@ -291,54 +296,6 @@ module Ui
         output = render_header
         output << render_lines
         output << render_summary
-      end
-
-      # time of the last data refresh
-      def last_refresh
-        @dt
-      end
-
-      # get the currently selected row
-      def selected
-        @pane.selected
-      end
-
-      # return true if the next node was selected, false otherwise
-      def select_next!
-        @pane.next_row!
-      end
-
-      # return true if the previous node was selected, false otherwise
-      def select_previous!
-        @pane.previous_row!
-      end
-
-      # select the first node in the current node ordering
-      def select_first!
-        @pane.first_row!
-      end
-
-      # next page
-      def next_page
-        @pane.next!
-      end
-
-      # previous page
-      def previous_page
-        @pane.previous!
-      end
-
-      # first page
-      def first_page
-        @pane.first!
-      end
-
-      def last_page
-        @pane.last!
-      end
-
-      def index
-        @pane.display_page
       end
     end
   end

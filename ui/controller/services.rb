@@ -2,8 +2,8 @@ require_relative 'base'
 
 module Ui
   module Controller
-    # ui to render node information
-    class Nodes < Base
+    # ui to render service information
+    class Services < Base
       attr_reader :model
 
       def initialize(console, model)
@@ -11,7 +11,7 @@ module Ui
         @model = model
       end
 
-      # render the node report
+      # render the service report
       def render_model
         model.render
       end
@@ -24,35 +24,32 @@ module Ui
       # node commands
       def prompt
         s = [
-          "[#{color.cyan.bold('s')}services]",
-          "[order: #pods (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), #{color.cyan('n')}ode name]",
           "[#{color.cyan.bold("q")}uit]"
         ].join(' ')
         "#{s}> "
       end
 
-      def go_pods(node)
-        app.pods.for_node(node)
-        app.select(:pods)
+      def go_nodes
+        app.select(:nodes)
         done!
       end
 
-      def go_services
-        app.select(:services)
-        done
-      end
-
-      # node keypresses
+      # service keypresses
       def handle(evt)
         super(evt)
 
-        if evt.key.name == :right || evt.value == 'p' || evt.key.name == :enter || evt.key.name == :return
-          n = model.selected.to_s
-          go_pods(n)
+        if evt.key.name == :left || evt.value == 'n'
+          go_nodes
         end
 
-        if evt.value == 's'
-          go_services
+        if evt.key.name == :up
+          model.select_previous!
+          refresh(false)
+        end
+
+        if evt.key.name == :down
+          model.select_next!
+          refresh(false)
         end
 
         if evt.key.name == :space
@@ -71,42 +68,25 @@ module Ui
           model.last_page
         end
 
-        if evt.value == 'a'
-          model.sort!(:pods_ascending)
-        end
-
-        if evt.value == 'd'
-          model.sort!(:pods_descending)
-        end
-
         if evt.value == '@'
-          model.sort!(:node_name)
+          model.sort!(:service_name)
         end
 
         if evt.value == '/'
           begin
             deregister
             @pattern = (reader.read_line "search pattern:").strip
-            # @pattern = pattern.strip
             model.filter!(@pattern)
             model.select_first!
             register
           rescue => e
-            pp e.backtrace
+            pp e.backtrace if $settings[:verbose]
             register
           end
         end
 
         if evt.value == '*'
           model.filter! nil
-        end
-
-        if evt.key.name == :up
-          model.select_previous!
-        end
-
-        if evt.key.name == :down
-          model.select_next!
         end
 
         taint!

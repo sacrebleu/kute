@@ -1,5 +1,4 @@
 # model for querying and rendering a cards of a kubernetes cluster's nodes
-# TODO: region of node
 #
 module Model
   class Pods

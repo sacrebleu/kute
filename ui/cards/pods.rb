@@ -1,7 +1,7 @@
 # generates a cli output of the pods belonging to an eks node
 module Ui
   module Cards
-    class Pods
+    class Pods < Base
 
       # models a row in the report
       class Row < Ui::Pane::SelectableRow
@@ -32,7 +32,8 @@ module Ui
         def rejigger(columns)
           columns.each do |column|
             m = column.name
-            column.rejigger(color.strip(send(m)).length + 1)
+            v = send(m)
+            column.rejigger(color.strip(v).length + 1) if v
           end
         end
 
@@ -120,61 +121,13 @@ module Ui
         output << render_lines
       end
 
-      # time of the last data refresh
-      def last_refresh
-        @dt
-      end
-
-      # get the currently selected row
-      def selected
-        @pane.selected
-      end
-
       # scroll to the named pod
       def scroll_to(name)
         @pane.goto_row!(@pane.find(:name, name))
       end
 
-      # return true if the next node was selected, false otherwise
-      def select_next!
-        @pane.next_row!
-      end
-
-      # return true if the previous node was selected, false otherwise
-      def select_previous!
-        @pane.previous_row!
-      end
-
-      # select the first node in the current node ordering
-      def select_first!
-        @pane.first_row!
-      end
-
       def pane_height
         TTY::Screen.height - 4 # leave space for columns + totals
-      end
-
-      # next page
-      def next_page
-        @pane.next!
-      end
-
-      # previous page
-      def previous_page
-        @pane.previous!
-      end
-
-      # first page
-      def first_page
-        @pane.first!
-      end
-
-      def last_page
-        @pane.last!
-      end
-
-      def index
-        @pane.display_page
       end
 
       # sort nodes by sort function - default is occupancy

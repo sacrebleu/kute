@@ -30,6 +30,10 @@ module Ui
       @cards[:pod_details] = Ui::Controller::PodDetails.new(self, card)
     end
 
+    def services=(card)
+      @cards[:services] = Ui::Controller::Services.new(self, card)
+    end
+
     def pods
       @cards[:pods]
     end
