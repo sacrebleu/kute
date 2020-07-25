@@ -21,23 +21,8 @@ require 'pp'
 require_relative 'log'
 require_relative 'cfg/kubeconfig'
 
-require_relative 'ui/pane'
-require_relative 'ui/cards/base'
-require_relative 'ui/cards/nodes'
-require_relative 'ui/cards/pods'
-require_relative 'ui/cards/pod'
-require_relative 'ui/cards/services'
-require_relative 'ui/console'
-require_relative 'ui/controller/nodes'
-require_relative 'ui/controller/pods'
-require_relative 'ui/controller/pod_details'
-require_relative 'ui/controller/services'
-require_relative 'ui/layout/layout'
-
-require_relative 'model/nodes'
-require_relative 'model/services'
-require_relative 'model/pods'
-require_relative 'model/instance_mapper'
+Dir[File.join(__dir__, 'ui', '**', '*.rb')].each(&method(:require))
+Dir[File.join(__dir__, 'model', '**', '*.rb')].each(&method(:require))
 
 VERSION = '0.0.6'
 
@@ -109,11 +94,13 @@ client = Kubeclient::Client.new(
   ssl_options: { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
 )
 
-console = Ui::Console.new(context)
-console.nodes = Ui::Cards::Nodes.new(client, instances, context)
-console.pods  = Ui::Cards::Pods.new(client,  context)
-console.pod_details= Ui::Cards::Pod.new(client, context)
-console.services= Ui::Cards::Services.new(client, context)
+clientv1beta = Kubeclient::Client.new(
+  "#{endpoint}/apis/extensions",
+  'v1beta1',
+  auth_options: auth_options,
+  ssl_options: { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
+)
 
+console = Ui::Console.new([client, clientv1beta], context, instances)
 console.select(:nodes)
 

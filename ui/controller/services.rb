@@ -24,7 +24,7 @@ module Ui
       # node commands
       def prompt
         s = [
-          "[#{color.cyan.bold("q")}uit]"
+          "[#{color.cyan.bold('n')}odes]"
         ].join(' ')
         "#{s}> "
       end
@@ -34,12 +34,22 @@ module Ui
         done!
       end
 
+      def go_service_details(s)
+        app.service_details.for_service(s)
+        app.select(:service_details)
+        done!
+      end
+
       # service keypresses
       def handle(evt)
         super(evt)
 
         if evt.key.name == :left || evt.value == 'n'
           go_nodes
+        end
+
+        if evt.key.name == :right || evt.value == 'd' || evt.key.name == :enter || evt.key.name == :return
+          go_service_details(model.selected)
         end
 
         if evt.key.name == :up

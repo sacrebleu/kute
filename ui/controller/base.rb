@@ -30,7 +30,7 @@ module Ui
       end
 
       def spin_start
-        @spinner = TTY::Spinner.new("[#{color.green($settings[:profile])}] #{color.cyan(@app.context['name'])} :spinner",
+        @spinner = TTY::Spinner.new("[#{color.green($settings[:profile])}] #{color.cyan(@app.context['name'])} :spinner " ,
                                     hide_cursor: true, clear: false, success_mark: '')
         @spinner.auto_spin
       end
@@ -83,7 +83,7 @@ module Ui
 
         c_bottomleft
 
-        reader.read_line(prompt)
+        reader.read_line("#{color.on_blue("[#{color.bold.cyan(@app.current_view)}]")} #{prompt} #{color.on_red("[#{color.bold('q')}uit]")}")
       end
 
       def c_goto(x,y)

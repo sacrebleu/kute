@@ -71,7 +71,7 @@ module Ui
           if selected?
             color.white.bold(@name) + color.bold.yellow(">")
           else
-            @container_health ? @name : color.yellow(@name)
+            @container_health ? @name : "#{color.yellow(@name)}#{color.bold.red("*")}"
           end
         end
 
@@ -200,8 +200,7 @@ module Ui
         end
       end
 
-      def initialize(client, instances, context)
-        @context = context
+      def initialize(client, instances)
         @model = Model::Nodes.new(client)
         @instances = instances
         @columns = [

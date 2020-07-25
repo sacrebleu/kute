@@ -1,32 +1,22 @@
 # generates a cli output of the pods belonging to an eks node
 module Ui
   module Cards
-    class Pods < Base
+    class Ingresses < Base
 
       # models a row in the report
       class Row < Ui::Pane::SelectableRow
         # attributes that don't match a column name won't be rendered
         # attr_reader :node, :region, :version
-        attr_reader :region, :version, :age, :namespace, :serviceaccount,
-                    :con, :vol, :ip, :rst, :color, :name
+        attr_reader :namespace, :name, :loadbalancer, :color
 
-        def initialize(pod, color)
+        def initialize(ingress, color)
           @color = color
-          @name = pod[:name]
-          @namespace = pod[:namespace]
-          @con = containers(pod)
-          @con_status = pod[:running] == pod[:containers]
-          @vol = pod[:volumes].to_s
-          # @status = COLUMNS[4].trim pod[:status]
-          @rst = pod[:restarts].to_s
-          @ports = pod[:ports]
-          @serviceaccount = pod[:serviceAccount]
-          @ip = pod[:ip]
-        end
-
-        def containers(pod)
-          pod[:running] < pod[:containers] ?
-            "#{color.yellow(pod[:running])}/#{pod[:containers]}" : "#{pod[:running]}/#{pod[:containers]}"
+          @name = ingress[:name]
+          @namespace = ingress[:namespace]
+          @in = ingress[:ingress]
+          @status = ingress[:status]
+          @age    = ingress[:creationTimestamp]
+          @loadbalancer = ingress[:loadbalancer]
         end
 
         def rejigger(columns)
@@ -37,12 +27,14 @@ module Ui
           end
         end
 
-        def ports
-          @ports[0..30]
+        def ingress
+          return color.yellow('public nginx') if @in == 'ingress-controller-public-nginx'
+          return 'private nginx' if @in == 'ingress-controller-internal-nginx'
+          'unknown'
         end
 
         def status
-          @con_status ? "Ok" : color.yellow("*")
+          @status == :active ? "Active" : color.yellow("Inactive")
         end
 
         # layout columns
@@ -63,33 +55,26 @@ module Ui
       attr_reader :node, :columns
 
       def initialize(client)
-        @model = Model::Pods.new(client)
+        # @context = context
+        @model = Model::Ingresses.new(client)
         @columns = [
-          [:name,     55, :left],
+          [:name, 30, :left],
           [:namespace, 20, :left],
-          [:con, 7, :left],
-          [:vol, 5, :left],
-          [:status, 10, :left],
-          [:rst, 5, :left],
-          [:ports, 30, :left],
-          [:serviceaccount, 20, :left],
-          [:ip, 15, :left]
+          [:ingress, 20, :left],
+          [:status, 7, :left],
+          [:loadbalancer, 40, :left],
         ].map { |e| Ui::Layout::Column.new(*e) }.freeze
-        @pods = []
-        @pane = Ui::Pane.new(@pods, pane_height)
+        @ingresses = []
+        @pane = Ui::Pane.new(@ingresses, pane_height)
         @dt = Time.now
         @pattern = ''
       end
 
       # set the list of pods to render
-      def for_node(node)
-        @node = node
-        refresh(true)
-      end
 
       def refresh(fetch, order=:default)
         reload! if fetch
-        @pane.update!(@pods) if fetch
+        @pane.update!(@ingresses) if fetch
         @pane.first_row! if fetch
 
         @dt = Time.now
@@ -97,8 +82,8 @@ module Ui
 
       # reload upstream data
       def reload!
-        @pods = @model.pods(@node).map do |pod|
-          r = Row.new(pod, @pane.color)
+        @ingresses = @model.ingresses.map do |ingress|
+          r = Row.new(ingress, @pane.color)
           r.rejigger(columns)
           r
         end
@@ -130,22 +115,14 @@ module Ui
 
       # sort nodes by sort function - default is occupancy
       def sort!(method)
-        if method == :containers_descending
-          @pane.sort! {|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
-        end
-
-        if method == :containers_ascending
-          @pane.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
-        end
-
-        if method == :node_name
+        if method == :ingress_name
           @pane.sort!{|a, b| a.name <=> b.name }
         end
       end
 
       def filter!(pattern)
         @pattern = pattern
-        @pane.filter! { |pod| /#{@pattern}/.match?(pod.name) }
+        @pane.filter! { |ingress| /#{@pattern}/.match?(ingress.name) }
       end
     end
   end

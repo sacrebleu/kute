@@ -3,7 +3,7 @@ require_relative 'base'
 module Ui
   module Controller
     # ui to render node information
-    class PodDetails < Base
+    class ServiceDetails < Base
       attr_reader :model
 
       def initialize(console, model)
@@ -16,8 +16,8 @@ module Ui
         model.render
       end
 
-      def for_pod(pod)
-        model.for(pod)
+      def for_service(service)
+        model.for(service)
       end
 
       # when did we last refresh
@@ -31,13 +31,12 @@ module Ui
           "#{color.cyan.bold("b")}ack",
         ].join(' ')
 
-        "#{model.pod.metadata.namespace}/#{model.pod.metadata.name}: #{s}> "
+        "#{model.service.metadata.namespace}/#{model.service.metadata.name}: #{s}> "
       end
 
-      def go_pods(pod)
-        app.select(:pods)
-        app.pods.for_node(pod.spec.nodeName)
-        app.pods.scroll_to(pod.metadata.name)
+      def go_services(service)
+        app.select(:services)
+        app.services.scroll_to(service.metadata.name)
         done!
       end
 
@@ -46,18 +45,13 @@ module Ui
         super(evt)
 
         # > and p both fetch pods from the selected node
-        if evt.key.name == :left || evt.value == 'p'
-          go_pods(model.pod)
+        if evt.key.name == :left || evt.value == 'b' || evt.value == 's'
+          go_services(model.service)
         end
 
         if evt.value == 'r' || evt.key.name == :enter
           model.reload!
           refresh(false)
-        end
-
-        if evt.value == 'd'
-          # pp model.pod
-          sleep(5)
         end
 
         taint!

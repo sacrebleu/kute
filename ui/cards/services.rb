@@ -7,7 +7,7 @@ module Ui
       class Row < Ui::Pane::SelectableRow
         # attributes that don't match a column name won't be rendered
         # attr_reader :node, :region, :version
-        attr_reader :region, :color, :namespace, :selector, :ip, :type, :age, :app
+        attr_reader :name, :region, :color, :namespace, :selector, :ip, :age, :app
 
         def initialize(service, color)
           @name       = service[:name]
@@ -30,8 +30,18 @@ module Ui
           @ports && @ports.length > 30 ? "#{@ports[0..27]}.." : @ports
         end
 
-        def load_balancer
+        def loadBalancer
           @load_balancer && @load_balancer.length > 50 ? "#{@load_balancer[0..47]}..." : @load_balancer
+        end
+
+        def type
+          if @type == 'LoadBalancer'
+            color.yellow.bold(@type)
+          elsif @type == 'ExternalName'
+            color.cyan(@type)
+          else
+            @type
+          end
         end
 
         def rejigger(columns)
@@ -50,28 +60,30 @@ module Ui
           @name
         end
 
-        def name
-          if selected?
-            color.white.bold(@name) + color.bold.yellow(">")
-          else
-            @name
-          end
-        end
+        # def name
+        #   if selected?
+        #     color.white.bold(@name) + color.bold.yellow(">")
+        #   else
+        #     @name
+        #   end
+        # end
 
         # layout columns
         def render(columns)
           output = ''
           columns.each do |column|
             m = column.name
-            # puts "#{m}=#{send(m)}"
-            output << column.render(send(m))
+            if m == :name && @selected
+              output << column.render(color.white.bold(@name) + color.bold.yellow(">"))
+            else
+              output << column.render(send(m))
+            end
           end
           output
         end
       end
 
-      def initialize(client, context)
-        @context = context
+      def initialize(client)
         @model = Model::Services.new(client)
         @columns = [
           [:name,     20, :left],
@@ -81,7 +93,7 @@ module Ui
           [:type, 15, :left],
           [:ip, 15, :left],
           [:ports, 30, :left],
-          [:load_balancer, 40, :left]
+          [:loadBalancer, 40, :left]
         ].map { |e| Ui::Layout::Column.new(*e) }.freeze
 
         @services = []

@@ -2,8 +2,8 @@ require_relative 'base'
 
 module Ui
   module Controller
-    # ui to render node information
-    class Pods < Base
+    # ui to render ingress information
+    class Ingresses < Base
       attr_reader :model
 
       def initialize(console, model)
@@ -11,13 +11,9 @@ module Ui
         @model = model
       end
 
-      # render the node report
+      # render the service report
       def render_model
         model.render
-      end
-
-      def for_node(node)
-        model.for_node(node)
       end
 
       # when did we last refresh
@@ -28,7 +24,8 @@ module Ui
       # node commands
       def prompt
         s = [
-          "[order: #containers (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), pod #{color.cyan('n')}ame]",
+          "[#{color.cyan.bold('n')}odes]",
+          "[#{color.cyan.bold('s')}ervices]",
         ].join(' ')
         "#{s}> "
       end
@@ -38,27 +35,31 @@ module Ui
         done!
       end
 
-      def go_pod_details(pod)
-        app.pod_details.for_pod(pod)
-        app.select(:pod_details)
+      def go_services
+        app.select(:services)
         done!
       end
 
-      def scroll_to(pod)
-        model.scroll_to(pod)
+      def go_ingress_details(s)
+        app.ingress_details.for_ingress(s)
+        app.select(:ingress_details)
+        done!
       end
 
-      # node keypresses
+      # service keypresses
       def handle(evt)
         super(evt)
 
-        # > and p both fetch pods from the selected node
         if evt.key.name == :left || evt.value == 'n'
           go_nodes
         end
 
+        if evt.value == 's'
+          go_services
+        end
+
         if evt.key.name == :right || evt.value == 'd' || evt.key.name == :enter || evt.key.name == :return
-          go_pod_details(model.selected)
+          go_ingress_details(model.selected)
         end
 
         if evt.key.name == :up
@@ -88,15 +89,7 @@ module Ui
         end
 
         if evt.value == '@'
-          model.sort!(:pod_name)
-        end
-
-        if evt.value == '#'
-          model.sort!(:container_count)
-        end
-
-        if evt.value == '!'
-          model.toggle!(:issues)
+          model.sort!(:service_name)
         end
 
         if evt.value == '/'

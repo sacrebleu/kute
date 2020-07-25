@@ -26,5 +26,12 @@ module Model
       services.sort!{|a,b| [a[:namespace], a[:name]] <=> [b[:namespace], b[:name]]}
       services
     end
+
+
+    # describe a service in detail
+    def describe(s, namespace)
+      s = @client.get_service s, namespace
+      s
+    end
   end
 end

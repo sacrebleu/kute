@@ -12,26 +12,19 @@ module Ui
     attr_reader :context
     attr_reader :poke
 
-    def initialize(context)
+    def initialize(clients, context, instances)
       @context = context
+      client = clients.first
+      @cards = {
+        nodes: Ui::Controller::Nodes.new(self, Ui::Cards::Nodes.new(client, instances)),
+        pods: Ui::Controller::Pods.new(self, Ui::Cards::Pods.new(client)),
+        pod_details: Ui::Controller::PodDetails.new(self, Ui::Cards::Pod.new(client)),
+        services: Ui::Controller::Services.new(self, Ui::Cards::Services.new(client)),
+        service_details: Ui::Controller::ServiceDetails.new(self, Ui::Cards::Service.new(client)),
+        ingresses: Ui::Controller::Ingresses.new(self, Ui::Cards::Ingresses.new(clients.last)),
+        ingress_details: Ui::Controller::IngressDetails.new(self, Ui::Cards::Ingress.new(clients.last))
+      }
       @selected = :nodes
-      @cards = {}
-    end
-
-    def nodes=(card)
-      @cards[:nodes] = Ui::Controller::Nodes.new(self, card)
-    end
-
-    def pods=(card)
-      @cards[:pods] = Ui::Controller::Pods.new(self, card)
-    end
-
-    def pod_details=(card)
-      @cards[:pod_details] = Ui::Controller::PodDetails.new(self, card)
-    end
-
-    def services=(card)
-      @cards[:services] = Ui::Controller::Services.new(self, card)
     end
 
     def pods
@@ -46,6 +39,22 @@ module Ui
       @cards[:pod_details]
     end
 
+    def service_details
+      @cards[:service_details]
+    end
+
+    def ingresses
+      @cards[:ingresses]
+    end
+
+    def ingress_details
+      @cards[:ingress_details]
+    end
+
+    def current_view
+      @selected.capitalize
+    end
+
     def select(key)
       @cards[@selected]&.deregister
       @selected = @cards[key] ? key : :help
@@ -58,6 +67,5 @@ module Ui
       @cards[@selected].reset!
       @cards[@selected].render
     end
-
   end
 end

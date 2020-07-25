@@ -5,8 +5,7 @@ module Ui
 
       attr_reader :pod
 
-      def initialize(client, context)
-        @context = context
+      def initialize(client)
         @model = Model::Pods.new(client)
         @dt = Time.now
         @selected = -1

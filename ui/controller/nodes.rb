@@ -24,9 +24,9 @@ module Ui
       # node commands
       def prompt
         s = [
-          "[#{color.cyan.bold('s')}services]",
-          "[order: #pods (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), #{color.cyan('n')}ode name]",
-          "[#{color.cyan.bold("q")}uit]"
+          "[#{color.green.bold('s')}ervices]",
+          "[#{color.green.bold('i')}ngresses]",
+          "[#{color.cyan('order')}: #pods (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), #{color.cyan('n')}ode name]",
         ].join(' ')
         "#{s}> "
       end
@@ -42,6 +42,11 @@ module Ui
         done
       end
 
+      def go_ingresses
+        app.select(:ingresses)
+        done
+      end
+
       # node keypresses
       def handle(evt)
         super(evt)
@@ -53,6 +58,10 @@ module Ui
 
         if evt.value == 's'
           go_services
+        end
+
+        if evt.value == 'i'
+          go_ingresses
         end
 
         if evt.key.name == :space
