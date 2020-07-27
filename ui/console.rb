@@ -10,7 +10,6 @@ require_relative 'util/duration'
 module Ui
   class Console
     attr_reader :context
-    attr_reader :poke
 
     def initialize(clients, context, instances)
       @context = context

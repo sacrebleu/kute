@@ -42,17 +42,33 @@ module Ui
         Ui::Layout::Justifier.ljust(s, w)
       end
 
-      def loadbalancer(ingress)
-        ingress.status.to_h&.dig(:loadBalancer, :ingress)&.first&.[](:hostname)
+      # spec={:rules=>[
+      #  {:host=>"api-gateway-core.eks-1-eu-west-1.dev.nexmo.xxx",
+      #   :http=>{
+      #     :paths=>[{:path=>"/", :backend=>{:serviceName=>"nexmo-gateway-proxy", :servicePort=>80}}]}}]},
+      def rules(w)
+        out = ''
+        ingress.spec.rules.map do |rule|
+          entries = rule.to_h.except(:host)
+          entries.map do |proto,route|
+            route[:paths].map do |path|
+              out << "#{proto}://#{rule[:host]}#{path[:path]} -> #{path[:backend][:serviceName]}:#{path[:backend][:servicePort]}"
+            end.flatten.join(_lj("\n", w))
+          end.flatten.join(_lj("\n", w))
+        end.flatten.join(_lj("\n", w))
       end
 
       def render
-        w = 11
-        pp ingress
-
+        w = 16
         out = <<~DONE
-        
-          #{ingress.metadata.namespace} / #{color.bold(ingress.metadata.name)}
+          LoadBalancers: #{ingress.status.loadBalancer.ingress.collect{|k| k[:hostname]}&.join(_lj("\n", w))} 
+          Status:        #{ingress.status.loadBalancer.ingress ? 'Active' : color.yellow('Inactive')}
+
+          annotations:   #{ingress.metadata.annotations&.to_h&.map {|k,v| "#{k}: #{color.cyan(v)}"}&.join(_lj("\n", w))}
+
+          labels:        #{ingress.metadata.labels&.to_h&.map {|k,v| "#{k}: #{color.cyan(v)}"}&.join(_lj("\n", w))}
+
+          rules:         #{rules(w)}
         DONE
 
         out

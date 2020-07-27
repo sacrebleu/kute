@@ -19,6 +19,7 @@ require 'concurrent-ruby'
 require 'pp'
 
 require_relative 'log'
+require_relative 'lib/hash'
 require_relative 'cfg/kubeconfig'
 
 Dir[File.join(__dir__, 'ui', '**', '*.rb')].each(&method(:require))
