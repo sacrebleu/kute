@@ -42,10 +42,6 @@ module Ui
         Ui::Layout::Justifier.ljust(s, w)
       end
 
-      # spec={:rules=>[
-      #  {:host=>"api-gateway-core.eks-1-eu-west-1.dev.nexmo.xxx",
-      #   :http=>{
-      #     :paths=>[{:path=>"/", :backend=>{:serviceName=>"nexmo-gateway-proxy", :servicePort=>80}}]}}]},
       def rules(w)
         out = ''
         ingress.spec.rules.map do |rule|

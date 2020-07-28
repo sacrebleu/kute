@@ -29,6 +29,8 @@ module Ui
       def prompt
         s = [
           "#{color.cyan.bold("b")}ack",
+          "#{color.cyan.bold("l")}ogs",
+          "#{color.cyan.bold("c")}ontainers",
         ].join(' ')
 
         "#{model.pod.metadata.namespace}/#{model.pod.metadata.name}: #{s}> "
@@ -55,9 +57,26 @@ module Ui
           refresh(false)
         end
 
-        if evt.value == 'd'
-          # pp model.pod
-          sleep(5)
+        if evt.value == 'l' || evt.key.name == :space
+          model.watch_logs
+          # model.reload!
+          refresh(false)
+        end
+
+        if evt.value == 'c'
+          model.unwatch_logs
+          model.reload!
+          refresh(false)
+        end
+
+        if evt.key.name == :up
+          model.previous
+          refresh(false)
+        end
+
+        if evt.key.name == :down
+          model.next
+          refresh(false)
         end
 
         taint!
