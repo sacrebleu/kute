@@ -71,7 +71,7 @@ that pod is highlighted in yellow, and the status is set to '*'
  
 Hitting `left` will return  you to the node listing.  You can scroll down to select a pod, then hit  `enter` or `right` to drill down into it. 
 
-![Kute can display the state of a pod's containers](./docs/details.png "container states for a pod")
+![Kute can display the state of a pod's containers](./docs/pod.png "container states for a pod")
 
 Selecting a pod gives an overview of that particular pod, showing information such as how it was generated (e.g StatefulSet, ReplicaSet), 
 the state of its various containers (`:waiting`, `:running` or `:terminated`) and varied detailed information on all of them
