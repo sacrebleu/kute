@@ -4,12 +4,7 @@
 
 ###### TODO
 
-1. cw metrics
-2. services
-3. ingresses
-4. config maps etc
-6. paging
-7. sorting
+See the [oustanding issue list](https://github.com/sacrebleu/kute/issues)
  
 
 #### Overview
