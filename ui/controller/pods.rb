@@ -34,7 +34,7 @@ module Ui
       end
 
       def go_nodes
-        app.select(:nodes)
+        app.select(:nodes, false)
         done!
       end
 
@@ -46,6 +46,7 @@ module Ui
 
       def scroll_to(pod)
         model.scroll_to(pod)
+        refresh(false)
       end
 
       # node keypresses

@@ -35,7 +35,7 @@ module Ui
       end
 
       def go_services(service)
-        app.select(:services)
+        app.select(:services, false)
         app.services.scroll_to(service.metadata.name)
         done!
       end

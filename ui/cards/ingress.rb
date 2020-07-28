@@ -57,7 +57,7 @@ module Ui
       def render
         w = 16
         out = <<~DONE
-          LoadBalancers: #{ingress.status.loadBalancer.ingress.collect{|k| k[:hostname]}&.join(_lj("\n", w))} 
+          LoadBalancers: #{ingress.status.loadBalancer.ingress&.collect{|k| k[:hostname]}&.join(_lj("\n", w))} 
           Status:        #{ingress.status.loadBalancer.ingress ? 'Active' : color.yellow('Inactive')}
 
           annotations:   #{ingress.metadata.annotations&.to_h&.map {|k,v| "#{k}: #{color.cyan(v)}"}&.join(_lj("\n", w))}

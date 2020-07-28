@@ -83,7 +83,11 @@ module Ui
 
         c_bottomleft
 
-        reader.read_line("#{color.on_blue("[#{color.bold.cyan(@app.current_view)}]")} #{prompt} #{color.on_red("[#{color.bold('q')}uit]")}")
+        reader.read_line("#{color.on_blue("[#{display_view}]")} #{prompt} #{color.on_red("[#{color.bold('q')}uit]")}")
+      end
+
+      def display_view
+        color.bold.cyan(@app.current_view.to_s.split('_').map(&:capitalize).join(' '))
       end
 
       def c_goto(x,y)
@@ -146,8 +150,8 @@ module Ui
       end
 
       # main render loop
-      def render
-        refresh(true)
+      def render(refresh = true)
+        refresh(refresh)
         until done? do
           sleep(100) until tainted?
           untaint!

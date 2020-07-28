@@ -37,7 +37,7 @@ module Ui
       end
 
       def go_pods(pod)
-        app.select(:pods)
+        app.select(:pods, false)
         app.pods.for_node(pod.spec.nodeName)
         app.pods.scroll_to(pod.metadata.name)
         done!
@@ -49,21 +49,22 @@ module Ui
 
         # > and p both fetch pods from the selected node
         if evt.key.name == :left || evt.value == 'p'
+          model.unwatch_logs
           go_pods(model.pod)
         end
 
-        if evt.value == 'r' || evt.key.name == :enter
+        if evt.value == 'r'
           model.reload!
           refresh(false)
         end
 
-        if evt.value == 'l' || evt.key.name == :space
+        if evt.value == 'l' || evt.key.name == :enter
           model.watch_logs
           # model.reload!
           refresh(false)
         end
 
-        if evt.value == 'c'
+        if evt.value == 'c' || evt.key.name == :backspace
           model.unwatch_logs
           model.reload!
           refresh(false)

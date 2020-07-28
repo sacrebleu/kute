@@ -9,7 +9,7 @@ require_relative 'util/duration'
 
 module Ui
   class Console
-    attr_reader :context
+    attr_reader :context, :logger
 
     def initialize(clients, context, instances)
       @context = context
@@ -54,17 +54,17 @@ module Ui
       @selected.capitalize
     end
 
-    def select(key)
+    def select(key,refresh = true)
       @cards[@selected]&.deregister
       @selected = @cards[key] ? key : :help
       @cards[@selected]&.register
-      render
+      render(refresh)
     end
 
     # call through to the card's render method
-    def render
+    def render(refresh)
       @cards[@selected].reset!
-      @cards[@selected].render
+      @cards[@selected].render(refresh)
     end
   end
 end

@@ -47,7 +47,7 @@ module Ui
 
     # display page n/N
     def display_page
-      "page #{color.cyan(@page)}/#{@pages}"
+      "#{color.cyan(@page)}/#{@pages}"
     end
 
     # get the full item list
@@ -127,8 +127,8 @@ module Ui
     end
 
     # find the first element in the data list with the field `name` matching `value`
-    def find(name, value)
-      @filtered.each_index.detect { |e| e.send(name) == value }
+    def find_by(name, value)
+      @filtered.each_index.detect { |e| color.strip(e.send(name) || '') == color.strip(value || '') }
     end
 
     def goto!(page)

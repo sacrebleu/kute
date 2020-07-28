@@ -3,14 +3,14 @@ module Ui
   module Cards
     class Pod
 
-      attr_reader :pod
+      attr_reader :pod, :log_pane
 
       def initialize(client)
         @client = client
         @model = Model::Pods.new(client)
         @dt = Time.now
         @selected = -1
-        @buffer = RingBuffer.new(height)
+        @log_pane = Ui::LogPane.new
         @container = 0
         @containers = []
       end
@@ -79,13 +79,13 @@ module Ui
       def watch_logs
         @tail = true
         container = @containers[@container]
-        s = @client.get_pod_log(@source.name, @source.namespace, {container: container.name, tail_lines: height})
-        s.split("\n").each{ |s| @buffer << s }
+        s = @client.get_pod_log(@source.name, @source.namespace, {container: container.name, tail_lines: 100})
+        s.split("\n").each{ |s| log_pane << s }
       end
 
       def unwatch_logs
         @tail = false
-        @buffer.clear
+        log_pane.clear
       end
 
       def container_status(cs)
@@ -104,7 +104,7 @@ module Ui
 
       def render
         if @tail
-          @buffer.values.join("\n")
+          log_pane.values.join("\n")
         else
 
           # row 1 - start time, status, ip, controlled-by
@@ -133,7 +133,7 @@ module Ui
             CONT
           end.join("\n")
 
-          generator = owr ? "#{owr[:name]} [#{owr[:kind]}]" : "Unknown"
+          generator = owr ? "#{owr[:name]} [#{color.cyan(owr[:kind])}]" : "Unknown"
           w = [generator, pod.spec.schedulerName].collect(&:length).max + 1
 
           out = <<~DONE
@@ -141,7 +141,7 @@ module Ui
             Pod:        #{pod.metadata.namespace}/#{color.white(pod.metadata.name)} [#{color.cyan(pod.status.podIP)}]
             Status:     #{status} [#{conditions}]
             
-            Host Node:  #{pod.status.hostIP} (#{color.blue(pod.spec.nodeName)})    
+            Host Node:  #{pod.status.hostIP} (#{color.blue.bold(pod.spec.nodeName)})    
             Generator:  #{_rj(generator, w)}   Service Account: #{pod.spec.serviceAccount}
             Scheduler:  #{_rj(pod.spec.schedulerName, w)}           Restart: #{color.cyan(pod.spec.restartPolicy)}   Grace period: #{color.cyan(pod.spec.terminationGracePeriodSeconds)}s  
           

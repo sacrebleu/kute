@@ -121,7 +121,7 @@ module Ui
 
       # scroll to the named pod
       def scroll_to(name)
-        @pane.goto_row!(@pane.find(:name, name))
+        @pane.goto_row!(@pane.find_by(:name, name))
       end
 
       def pane_height

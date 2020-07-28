@@ -35,7 +35,7 @@ module Ui
       end
 
       def go_ingresses(ingress)
-        app.select(:ingresses)
+        app.select(:ingresses, false)
         app.ingresses.scroll_to(ingress.metadata.name)
         done!
       end
