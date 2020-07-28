@@ -26,7 +26,7 @@ require_relative 'cfg/kubeconfig'
 Dir[File.join(__dir__, 'ui', '**', '*.rb')].each(&method(:require))
 Dir[File.join(__dir__, 'model', '**', '*.rb')].each(&method(:require))
 
-VERSION = '0.0.6'
+VERSION = '0.0.8'
 
 $settings = {}
 

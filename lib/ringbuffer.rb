@@ -33,8 +33,14 @@ class RingBuffer
   end
   alias :<< :push
 
-  def values
-    @buffer
+  def [](idx)
+    @buffer[idx]
+  end
+
+  def values(from=0, to=-1)
+    i = from < 0 || from > @buffer.length ? 0 : from
+    j = to > @buffer.length - 1 ? @buffer.length - 1 : to
+    @buffer[i..j]
   end
 
   def shift

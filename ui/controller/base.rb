@@ -30,7 +30,7 @@ module Ui
       end
 
       def spin_start
-        @spinner = TTY::Spinner.new("[#{color.green($settings[:profile])}] #{color.cyan(@app.context['name'])} :spinner " ,
+        @spinner = TTY::Spinner.new("kute-#{VERSION}> [#{color.green($settings[:profile])}] #{color.cyan(@app.context['name'])} :spinner " ,
                                     hide_cursor: true, clear: false, success_mark: '')
         @spinner.auto_spin
       end
@@ -83,7 +83,16 @@ module Ui
 
         c_bottomleft
 
-        reader.read_line("#{color.on_blue("[#{display_view}]")} #{prompt} #{color.on_red("[#{color.bold('q')}uit]")}")
+        reader.read_line(top_prompt)
+      end
+
+      def top_prompt
+        [
+          color.on_blue("[#{display_view}]"),
+          prompt,
+          "[#{color.magenta("#{color.bold('r')}efresh")}]",
+          "[#{color.bold.red("#{color.white('q')}uit")}]"
+        ].join(' ')
       end
 
       def display_view
@@ -116,6 +125,11 @@ module Ui
 
       # handle keypress
       def handle(event)
+        if event.value == 'r'
+          puts "Refresh"
+          refresh(true)
+          taint!
+        end
         if event.value == 'q'
           puts "Exiting"
           c_topleft

@@ -58,9 +58,8 @@ module Ui
           refresh(false)
         end
 
-        if evt.value == 'l' || evt.key.name == :enter
+        if evt.value == 'l' || evt.key.name == :space
           model.watch_logs
-          # model.reload!
           refresh(false)
         end
 
