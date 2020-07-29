@@ -16,6 +16,7 @@ if [[ $(ruby -e "print RUBY_VERSION.split('.')[0..1].join('.')") != "2.5" ]]; th
     if [[ "$VERSION" != "2.5" ]]; then
         echo "Installing ruby 2.5.8 with rbenv"
         $RBENV install 2.5.8
+        eval "$(rbenv init -)"
         $RBENV shell 2.5.8
     fi
 fi
