@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 source 'https://rubygems.org'
 
-ruby '2.5.1'
+ruby '~> 2.5' # support all 2.5
+
+gem 'pastel', git: 'https://github.com/piotrmurach/pastel'
+gem 'tty', git: 'https://github.com/sacrebleu/tty'
 
 gem 'aws-sdk-cloudwatch', '~> 1.14'
 gem 'aws-sdk-ec2', '~> 1.112'
@@ -15,10 +18,5 @@ gem 'colorize',   '~> 0.8'
 gem 'rspec',      '~> 3.9'
 gem 'rspec-core', '~> 3.9'
 
-# gem 'tty',  '~> 0.10.0'
-gem 'pastel', git: 'https://github.com/piotrmurach/pastel'
-
-gem 'tty', git: 'https://github.com/sacrebleu/tty'
 
 gem 'concurrent-ruby', '~> 1.1.6'
-# gem 'concurrent-ruby-edge', '0.6.0'

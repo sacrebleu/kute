@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+#set -e
 
 echo Checking local ruby version is 2.5...
 
@@ -11,21 +11,25 @@ if [[ $(ruby -e "print RUBY_VERSION.split('.')[0..1].join('.')") != "2.5" ]]; th
         exit 1
     fi
 
-    VERSION=$(${RBENV} versions | grep 2.5 | cut -d' ' -f2 | awk '{print substr($0,0,3)}')
-
-    if [[ "$VERSION" != "2.5" ]]; then
-        echo "Installing ruby 2.5.8 with rbenv"
+    VERSION=$(${RBENV} versions --bare | grep 2.5 | cut -d' ' -f2 | awk '{print substr($0,0,5)}')
+    if [[ -z $VERSION ]]; then
+        echo "installing ruby 2.5.8"
         $RBENV install 2.5.8
         eval "$(rbenv init -)"
-        $RBENV shell 2.5.8
         $RBENV rehash
+        $RBENV shell 2.5.8
+    else
+        echo "setting ruby shell version to ${VERSION}"
+        eval "$(rbenv init -)"
+        $RBENV rehash
+        $RBENV shell $VERSION
     fi
 fi
 
 BUNDLER=$(gem list bundler | tr '(),' ' ' | awk '{ split($0,v," "); for (word in v){ print v[word];} }'  | head -1 | grep 2.1)
 
 # verify bundler
-if [[ -z "$BUNDLER" ]]; then
+if [[ -z $BUNDLER ]]; then
     echo "Installing bundler 2.1.4"
     gem install bundler -v=2.1.4
     # ensure bundler was installed correctly on the path
@@ -35,4 +39,5 @@ if [[ -z "$BUNDLER" ]]; then
     fi
 fi
 
+echo "Running bundle install --deployment"
 bundle install --deployment
