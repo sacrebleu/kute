@@ -26,18 +26,9 @@ module Ui
         s = [
           "[#{color.cyan.bold('n')}odes]",
           "[#{color.cyan.bold('s')}ervices]",
+          "[config #{color.cyan.bold('m')}aps]",
         ].join(' ')
         "#{s}> "
-      end
-
-      def go_nodes
-        app.select(:nodes)
-        done!
-      end
-
-      def go_services
-        app.select(:services)
-        done!
       end
 
       def go_ingress_details(s)
@@ -50,42 +41,12 @@ module Ui
       def handle(evt)
         super(evt)
 
-        if evt.key.name == :left || evt.value == 'n'
+        if evt.key.name == :left
           go_nodes
-        end
-
-        if evt.value == 's'
-          go_services
         end
 
         if evt.key.name == :right || evt.value == 'd' || evt.key.name == :enter || evt.key.name == :return
           go_ingress_details(model.selected)
-        end
-
-        if evt.key.name == :up
-          model.select_previous!
-          refresh(false)
-        end
-
-        if evt.key.name == :down
-          model.select_next!
-          refresh(false)
-        end
-
-        if evt.key.name == :space
-          model.next_page
-        end
-
-        if evt.value == 'b'
-          model.previous_page
-        end
-
-        if evt.value == '^'
-          model.first_page
-        end
-
-        if evt.value == '$'
-          model.last_page
         end
 
         if evt.value == '@'
@@ -103,10 +64,6 @@ module Ui
             pp e.backtrace if $settings[:verbose]
             register
           end
-        end
-
-        if evt.value == '*'
-          model.filter! nil
         end
 
         taint!

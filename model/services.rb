@@ -23,8 +23,7 @@ module Model
           external_name: p.spec.externalName
         }
       end
-      services.sort!{|a,b| [a[:namespace], a[:name]] <=> [b[:namespace], b[:name]]}
-      services
+      services.sort_by{ |a| [a[:namespace], a[:name]] }
     end
 
 

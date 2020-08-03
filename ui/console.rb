@@ -21,7 +21,9 @@ module Ui
         services: Ui::Controller::Services.new(self, Ui::Cards::Services.new(client)),
         service_details: Ui::Controller::ServiceDetails.new(self, Ui::Cards::Service.new(client)),
         ingresses: Ui::Controller::Ingresses.new(self, Ui::Cards::Ingresses.new(clients.last)),
-        ingress_details: Ui::Controller::IngressDetails.new(self, Ui::Cards::Ingress.new(clients.last))
+        ingress_details: Ui::Controller::IngressDetails.new(self, Ui::Cards::Ingress.new(clients.last)),
+        config_maps: Ui::Controller::ConfigMaps.new(self, Ui::Cards::ConfigMaps.new(client)),
+        map_details: Ui::Controller::ConfigMapDetails.new(self, Ui::Cards::ConfigMapDetails.new(client))
       }
       @selected = :nodes
     end
@@ -48,6 +50,14 @@ module Ui
 
     def ingress_details
       @cards[:ingress_details]
+    end
+
+    def config_maps
+      @cards[:config_maps]
+    end
+
+    def map_details
+      @cards[:map_details]
     end
 
     def current_view

@@ -62,32 +62,6 @@ module Ui
           go_pod_details(model.selected)
         end
 
-        if evt.key.name == :up
-          model.select_previous!
-          refresh(false)
-        end
-
-        if evt.key.name == :down
-          model.select_next!
-          refresh(false)
-        end
-
-        if evt.key.name == :space
-          model.next_page
-        end
-
-        if evt.value == 'b'
-          model.previous_page
-        end
-
-        if evt.value == '^'
-          model.first_page
-        end
-
-        if evt.value == '$'
-          model.last_page
-        end
-
         if evt.value == '@'
           model.sort!(:pod_name)
         end
@@ -111,10 +85,6 @@ module Ui
             pp e.backtrace if $settings[:verbose]
             register
           end
-        end
-
-        if evt.value == '*'
-          model.filter! nil
         end
 
         taint!

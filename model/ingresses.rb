@@ -18,8 +18,7 @@ module Model
           loadbalancer: p.status.to_h&.dig(:loadBalancer, :ingress)&.first&.[](:hostname)
         }
       end
-      ingresses.sort!{|a,b| [a[:namespace], a[:name]] <=> [b[:namespace], b[:name]] }
-      ingresses
+      ingresses.sort_by{ |a| [a[:namespace], a[:name]] }
     end
 
     def describe(ingress, namespace)

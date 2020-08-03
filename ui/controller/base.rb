@@ -43,6 +43,26 @@ module Ui
         @cursor ||= TTY::Cursor
       end
 
+      def go_nodes
+        app.select(:nodes)
+        done!
+      end
+
+      def go_services
+        app.select(:services)
+        done!
+      end
+
+      def go_config_maps
+        app.select(:config_maps)
+        done!
+      end
+
+      def go_ingresses
+        app.select(:ingresses)
+        done
+      end
+
       def width
         TTY::Screen.width
       end
@@ -129,12 +149,64 @@ module Ui
           puts "Refresh"
           refresh(true)
           taint!
+          return
         end
+
         if event.value == 'q'
           puts "Exiting"
           c_topleft
           print cursor.clear_screen
           exit(1)
+        end
+
+        if event.value == 'n'
+          go_nodes
+          return
+        end
+
+        if event.value == 's'
+          go_services
+          return
+        end
+
+        if event.value == 'i'
+          go_ingresses
+          return
+        end
+
+        if event.value == 'm'
+          go_config_maps
+          return
+        end
+
+        if event.key.name == :space
+          model.next_page
+        end
+
+        if event.value == 'b'
+          model.previous_page
+        end
+
+        if event.value == '^'
+          model.first_page
+        end
+
+        if event.value == '$'
+          model.last_page
+        end
+
+        if event.value == '*'
+          model.filter! nil
+        end
+
+        if event.key.name == :up
+          model.select_previous!
+          refresh(false)
+        end
+
+        if event.key.name == :down
+          model.select_next!
+          refresh(false)
         end
       end
 

@@ -18,5 +18,4 @@ gem 'colorize',   '~> 0.8'
 gem 'rspec',      '~> 3.9'
 gem 'rspec-core', '~> 3.9'
 
-
 gem 'concurrent-ruby', '~> 1.1.6'

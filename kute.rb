@@ -26,7 +26,7 @@ require_relative 'cfg/kubeconfig'
 Dir[File.join(__dir__, 'ui', '**', '*.rb')].each(&method(:require))
 Dir[File.join(__dir__, 'model', '**', '*.rb')].each(&method(:require))
 
-VERSION = '0.0.8'
+VERSION = '0.0.11'
 
 $settings = {}
 
@@ -64,8 +64,16 @@ OptionParser.new do |opts|
     $settings[:cluster] = v
   end
 
-  opts.on('-w', '--cloudwatch', 'Add additional cloudwatch derived metrics at the expense of speed') do |v|
-    $settings[:cloudwatch] = :enabled
+  opts.on('-m', '--maps', 'Start with a list of cluster config maps') do |_|
+    $settings[:selected] = :config_maps
+  end
+
+  opts.on('-s', '--services', 'Start with a list of cluster services') do |_|
+    $settings[:selected] = :services
+  end
+
+  opts.on('-i', '--ingresses', 'Start with a list of cluster ingresses') do |_|
+    $settings[:selected] = :ingresses
   end
 end.parse!
 
@@ -104,5 +112,5 @@ clientv1beta = Kubeclient::Client.new(
 )
 
 console = Ui::Console.new([client, clientv1beta], context, instances)
-console.select(:nodes)
+console.select($settings[:selected] || :nodes)
 

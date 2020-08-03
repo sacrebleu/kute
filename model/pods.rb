@@ -26,8 +26,7 @@ module Model
                    .join(',')
         }
       end
-      pods.sort!{|a,b| a[:name] <=> b[:name] }
-      pods
+      pods.sort_by{|a| [a[:namespace], a[:name]] }
     end
 
     def describe(pod, namespace)

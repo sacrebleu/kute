@@ -3,7 +3,7 @@ module Ui
 
     attr_reader :width, :height
 
-    def initialize(w = TTY::Screen.width, h=TTY::Screen.height - 3, tail=100)
+    def initialize(tail=100, w = TTY::Screen.width, h=TTY::Screen.height - 3)
       @width = w
       @height = h
       @tail = tail
@@ -24,6 +24,11 @@ module Ui
     def last
       @idx = @tail - 1
       @pane_first = back
+    end
+
+    def first
+      @idx = 0
+      self.next
     end
 
     def previous

@@ -39,7 +39,7 @@ class RingBuffer
 
   def values(from=0, to=-1)
     i = from < 0 || from > @buffer.length ? 0 : from
-    j = to > @buffer.length - 1 ? @buffer.length - 1 : to
+    j = to > (@buffer.length - 1) ? @buffer.length - 1 : to
     @buffer[i..j]
   end
 
