@@ -21,7 +21,7 @@ module Model
       maps.sort_by{ |a| [a[:namespace], a[:name]] }
     end
 
-    def describe(name ,namespace)
+    def describe(name, namespace)
       @client.get_config_map name, namespace
     end
   end

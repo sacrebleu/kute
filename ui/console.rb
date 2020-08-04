@@ -9,10 +9,11 @@ require_relative 'util/duration'
 
 module Ui
   class Console
-    attr_reader :context, :logger
+    attr_reader :context, :logger, :reader
 
     def initialize(clients, context, instances)
       @context = context
+      @reader = TTY::Reader.new
       client = clients.first
       @cards = {
         nodes: Ui::Controller::Nodes.new(self, Ui::Cards::Nodes.new(client, instances)),
@@ -26,6 +27,7 @@ module Ui
         map_details: Ui::Controller::ConfigMapDetails.new(self, Ui::Cards::ConfigMapDetails.new(client))
       }
       @selected = :nodes
+      @render = nil
     end
 
     def pods

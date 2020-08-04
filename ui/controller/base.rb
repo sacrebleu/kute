@@ -9,7 +9,7 @@ module Ui
       def initialize(console)
         @app = console
         @buffer = ""
-        @reader = TTY::Reader.new
+        @reader = console.reader
       end
 
       def color
@@ -23,6 +23,7 @@ module Ui
       def deregister
         begin
           @reader.send(:local_registrations).clear
+
         rescue => e
           puts e.message
           puts e.backtrace.join("\n")

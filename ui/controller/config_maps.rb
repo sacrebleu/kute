@@ -16,10 +16,6 @@ module Ui
         model.render
       end
 
-      def for_node(node)
-        model.for_node(node)
-      end
-
       # when did we last refresh
       def render_refresh_time
         "#{@pattern ? "search: /#{@pattern}/" : ''} page: #{model.index} Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"

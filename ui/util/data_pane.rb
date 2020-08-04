@@ -4,10 +4,10 @@ module Ui
 
       attr_reader :width, :height
 
-      def initialize(w = TTY::Screen.width, h=TTY::Screen.height - 3)
+      def initialize(w = TTY::Screen.width, h=TTY::Screen.height - 3, data)
         @width = w
         @height = h
-        @buffer = []
+        @buffer = data
       end
 
       def clear
@@ -31,12 +31,12 @@ module Ui
         @idx = 0
       end
 
-      def previous!
+      def previous
         @idx -= height
         @idx = 0 if @idx.negative?
       end
 
-      def next!
+      def next
         @idx += height
         @idx = idx_last if @idx > idx_last
       end

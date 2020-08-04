@@ -156,6 +156,15 @@ module Ui
           out
         end
       end
+
+
+      def select_next!
+        self.next
+      end
+
+      def select_previous!
+       self.previous
+      end
     end
   end
 end

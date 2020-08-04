@@ -58,7 +58,7 @@ module Ui
           refresh(false)
         end
 
-        if evt.value == 'l' || evt.key.name == :space
+        if evt.value == 'l'
           model.watch_logs
           refresh(false)
         end
@@ -66,16 +66,6 @@ module Ui
         if evt.value == 'c' || evt.key.name == :backspace
           model.unwatch_logs
           model.reload!
-          refresh(false)
-        end
-
-        if evt.key.name == :up
-          model.previous
-          refresh(false)
-        end
-
-        if evt.key.name == :down
-          model.next
           refresh(false)
         end
 
