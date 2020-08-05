@@ -48,18 +48,15 @@ module Ui
       end
 
       def render
-        if generator[:kind] == "ReplicaSet"
-          ReplicaSet.new(generator, color).render
-        end
+        Resource.new(generator, color).render
       end
-
 
       def select_next!
         self.next
       end
 
       def select_previous!
-       self.previous
+        previous
       end
     end
 
@@ -77,14 +74,9 @@ module Ui
       def _lj(s, w)
         Ui::Layout::Justifier.ljust(s, w)
       end
-    end
 
-    class DaemonSet < Resource
-
-    end
-
-    class ReplicaSet < Resource
       def render
+        # pp record.to_h
         # row 1 - start time, status, ip, controlled-by
         containers = record.spec.template.spec.containers
         cnw = [containers.map{|c| c[:name].length }.max + 2, 8].max
@@ -101,30 +93,35 @@ module Ui
                    color.bold.yellow("Partially Ready")
                  end
 
+        colwidth = 14
 
         cnt = containers.map do |c|
           name = c[:name]
-          s = <<~CONT
-            #{_lj(color.bold(name), cnw)}
-            #{_rj('image:', cnw)} #{c[:image]} (pull: #{color.cyan(c[:imagePullPolicy])})
-            #{_rj('ports:', cnw)} #{c[:ports]&.map{|p| "#{p[:protocol]}:#{p[:containerPort]}"}&.join(', ')}
+           r = <<~CONT
+            #{"  " +_lj("#{color.bold(name)}:", cnw)}
+            #{_rj('image:', colwidth)} #{c[:image]} (pull: #{color.cyan(c[:imagePullPolicy])})
+            #{_rj('ports:', colwidth)} #{c[:ports]&.map{|p| "#{p[:protocol]}:#{p[:containerPort]}"}&.join(', ')}
           CONT
-            s << "#{_rj('mounts:', cnw)} #{c[:volumeMounts].map{|v| "#{v[:name]} -> #{v[:mountPath]}#{v[:readOnly]?" [ro]":color.yellow(" [w+]")}"}&.join("\n #{_lj(' ', cnw)}")}" if c[:volumeMounts]
-        end.join("\n")
+          if c[:volumeMounts]
+            r += "#{_rj('mounts:', colwidth)} #{c[:volumeMounts].map{|v| "#{v[:name]} -> #{v[:mountPath]}#{v[:readOnly]?" [ro]":color.yellow(" [w+]")}"}&.join("\n" + "#{_lj(' ', colwidth+1)}")}"
+            r += "\n"
+          end
+          r
+        end
+        cnt = cnt.join("\n")
 
         ts = record.spec.template.spec
 
-        w = "#{record.metadata.namespace}/#{record.metadata.name}".length
-
+        w = ["#{record.metadata.namespace}/#{record.metadata.name}".length, ts.schedulerName.length].max + 1
         out =<<~DONE
         
-            Replica Set: #{record.metadata.namespace}/#{color.white(record.metadata.name)}  Status: #{status} 
-            Scheduler:   #{_lj(color.cyan(ts.schedulerName), w)}  Restart: #{color.cyan(ts.restartPolicy)}   Grace period: #{color.cyan(ts.terminationGracePeriodSeconds)}s  
+            #{_lj("#{record.kind}:", colwidth)} #{_lj("#{record.metadata.namespace}/#{color.white(record.metadata.name)}", w)}   Status: #{status} 
+            #{_lj("Scheduler:", colwidth)} #{_lj(color.cyan(ts.schedulerName), w)}   Restart: #{color.cyan(ts.restartPolicy)}   Grace period: #{color.cyan(ts.terminationGracePeriodSeconds)}s  
           
-            Labels:      #{record.metadata.labels.to_h.reject{|k,_| ["pod-template-hash", :version].include?(k)}.map{|k,v| "#{k}=#{color.cyan(v)}"}.join("\n             ")}
-            Annotated:   #{record.metadata.annotations.to_h.reject{|k,_| [:"kubectl.kubernetes.io/last-applied-configuration"].include?(k)}.map{|k,v| "#{k}=#{color.cyan(v)}"}.join("\n             ")}
+            #{_lj("Labels:", colwidth)} #{record.metadata.labels.to_h.reject{|k,_| ["pod-template-hash", :version].include?(k)}.map{|k,v| "#{k}=#{color.cyan(v)}"}.join("\n"+ _lj(" ", colwidth+1))}
+            #{_lj("Annotated:", colwidth)} #{record.metadata.annotations.to_h.reject{|k,_| [:"kubectl.kubernetes.io/last-applied-configuration"].include?(k)}.map{|k,v| "#{k}=#{color.cyan(v)}"}.join("\n" + _lj(" ", colwidth+1))}
   
-            containers:
+            #{color.blue.bold("containers:")}
             #{cnt}
         DONE
 
