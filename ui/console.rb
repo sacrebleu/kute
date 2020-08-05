@@ -11,20 +11,21 @@ module Ui
   class Console
     attr_reader :context, :logger, :reader
 
-    def initialize(clients, context, instances)
+    def initialize(version_manager, context, instances)
       @context = context
       @reader = TTY::Reader.new
-      client = clients.first
       @cards = {
-        nodes: Ui::Controller::Nodes.new(self, Ui::Cards::Nodes.new(client, instances)),
-        pods: Ui::Controller::Pods.new(self, Ui::Cards::Pods.new(client)),
-        pod_details: Ui::Controller::PodDetails.new(self, Ui::Cards::Pod.new(client)),
-        services: Ui::Controller::Services.new(self, Ui::Cards::Services.new(client)),
-        service_details: Ui::Controller::ServiceDetails.new(self, Ui::Cards::Service.new(client)),
-        ingresses: Ui::Controller::Ingresses.new(self, Ui::Cards::Ingresses.new(clients.last)),
-        ingress_details: Ui::Controller::IngressDetails.new(self, Ui::Cards::Ingress.new(clients.last)),
-        config_maps: Ui::Controller::ConfigMaps.new(self, Ui::Cards::ConfigMaps.new(client)),
-        map_details: Ui::Controller::ConfigMapDetails.new(self, Ui::Cards::ConfigMapDetails.new(client))
+        nodes: Ui::Controller::Nodes.new(self, Ui::Cards::Nodes.new(version_manager, instances)),
+        pods: Ui::Controller::Pods.new(self, Ui::Cards::Pods.new(version_manager)),
+        pod_details: Ui::Controller::PodDetails.new(self, Ui::Cards::Pod.new(version_manager)),
+        services: Ui::Controller::Services.new(self, Ui::Cards::Services.new(version_manager)),
+        service_details: Ui::Controller::ServiceDetails.new(self, Ui::Cards::Service.new(version_manager)),
+        ingresses: Ui::Controller::Ingresses.new(self, Ui::Cards::Ingresses.new(version_manager)),
+        ingress_details: Ui::Controller::IngressDetails.new(self, Ui::Cards::Ingress.new(version_manager)),
+        config_maps: Ui::Controller::ConfigMaps.new(self, Ui::Cards::ConfigMaps.new(version_manager)),
+        map_details: Ui::Controller::ConfigMapDetails.new(self, Ui::Cards::ConfigMapDetails.new(version_manager)),
+        generators: Ui::Controller::Generators.new(self, Ui::Cards::Generators.new(version_manager)),
+        generator_details: Ui::Controller::GeneratorDetails.new(self, Ui::Cards::GeneratorDetails.new(version_manager)),
       }
       @selected = :nodes
       @render = nil
@@ -56,6 +57,14 @@ module Ui
 
     def config_maps
       @cards[:config_maps]
+    end
+
+    def generators
+      @cards[:generators]
+    end
+
+    def generator_details
+      @cards[:generator_details]
     end
 
     def map_details

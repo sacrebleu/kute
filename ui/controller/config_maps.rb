@@ -27,6 +27,7 @@ module Ui
           "[#{color.cyan.bold('n')}odes]",
           "[#{color.cyan.bold('i')}ngresses]",
           "[#{color.cyan.bold('s')}ervices]",
+          "[#{color.cyan.bold('g')}enerators]",
         ].join(' ')
         "#{s}> "
       end

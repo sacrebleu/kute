@@ -20,13 +20,15 @@ require 'pp'
 
 require_relative 'log'
 require_relative 'lib/hash'
+require_relative 'lib/string'
 require_relative 'lib/ringbuffer'
+require_relative 'lib/version_manager'
 require_relative 'cfg/kubeconfig'
 
 Dir[File.join(__dir__, 'ui', '**', '*.rb')].each(&method(:require))
 Dir[File.join(__dir__, 'model', '**', '*.rb')].each(&method(:require))
 
-VERSION = '0.0.11'
+VERSION = '0.0.12'
 
 $settings = {}
 
@@ -68,6 +70,10 @@ OptionParser.new do |opts|
     $settings[:selected] = :config_maps
   end
 
+  opts.on('-g', '--generators', 'Start with a list of cluster pod generators [deployments, stateful sets, daemonsets and replicasets]') do |_|
+    $settings[:selected] = :generators
+  end
+
   opts.on('-s', '--services', 'Start with a list of cluster services') do |_|
     $settings[:selected] = :services
   end
@@ -97,20 +103,26 @@ cluster_name=context['name'].split('/')[1]
 
 instances = InstanceMapper.new(credentials, cluster_name, $settings)
 
-client = Kubeclient::Client.new(
-  endpoint,
-  'v1',
-  auth_options: auth_options,
-  ssl_options: { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
-)
+# client = Kubeclient::Client.new(
+#   endpoint,
+#   'v1',
+#   auth_options: auth_options,
+#   ssl_options: { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
+# )
+#
+# clientv1beta = Kubeclient::Client.new(
+#   "#{endpoint}/apis/extensions",
+#   'v1beta1',
+#   auth_options: auth_options,
+#   ssl_options: { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
+# )
 
-clientv1beta = Kubeclient::Client.new(
-  "#{endpoint}/apis/extensions",
-  'v1beta1',
-  auth_options: auth_options,
-  ssl_options: { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
-)
+version = Aws::EKS::Client.new(credentials: credentials).describe_cluster(name: cluster_name)
 
-console = Ui::Console.new([client, clientv1beta], context, instances)
+console = Ui::Console.new(
+  VersionManager.new(version, endpoint, auth_options),
+  context,
+  instances)
+
 console.select($settings[:selected] || :nodes)
 

@@ -24,9 +24,10 @@ module Ui
       # node commands
       def prompt
         s = [
-          "[#{color.cyan.bold('n')}odes]",
-          "[#{color.cyan.bold('s')}ervices]",
-          "[config #{color.cyan.bold('m')}aps]",
+          "[#{color.green.bold('n')}odes]",
+          "[#{color.green.bold('s')}ervices]",
+          "[config #{color.green.bold('m')}aps]",
+          "[#{color.green.bold('g')}enerators]",
         ].join(' ')
         "#{s}> "
       end

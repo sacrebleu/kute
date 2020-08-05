@@ -2,8 +2,8 @@ require_relative 'base'
 
 module Ui
   module Controller
-    # ui to render service information
-    class Services < Base
+    # ui to render node information
+    class Generators < Base
       attr_reader :model
 
       def initialize(console, model)
@@ -11,7 +11,7 @@ module Ui
         @model = model
       end
 
-      # render the service report
+      # render the node report
       def render_model
         model.render
       end
@@ -24,34 +24,40 @@ module Ui
       # node commands
       def prompt
         s = [
-          "[config #{color.green.bold('m')}aps]",
-          "[#{color.green.bold('i')}ngresses]",
           "[#{color.green.bold('n')}odes]",
-          "[#{color.green.bold('g')}enerators]",
+          "[#{color.green.bold('i')}ngresses]",
+          "[#{color.green.bold('s')}ervices]",
+          "[config #{color.green.bold('m')}aps]"
         ].join(' ')
         "#{s}> "
       end
 
-      def go_service_details(s)
-        app.service_details.for_service(s)
-        app.select(:service_details)
+      def go_generator_details(gen)
+        app.generator_details.for_generator(gen)
+        app.select(:generator_details)
         done!
       end
 
-      # service keypresses
+      def scroll_to(map)
+        model.scroll_to(map)
+        refresh(false)
+      end
+
+      # node keypresses
       def handle(evt)
         super(evt)
 
-        if evt.key.name == :left || evt.value == 'n'
+        # > and p both fetch pods from the selected node
+        if evt.key.name == :left
           go_nodes
         end
 
-        if evt.key.name == :right || evt.value == 'd' || evt.key.name == :enter || evt.key.name == :return
-          go_service_details(model.selected)
+        if evt.key.name == :right || evt.key.name == :enter || evt.key.name == :return
+          go_generator_details(model.selected)
         end
 
         if evt.value == '@'
-          model.sort!(:service_name)
+          model.sort!(:map_name)
         end
 
         if evt.value == '/'

@@ -27,6 +27,7 @@ module Ui
           "[config #{color.green.bold('m')}aps]",
           "[#{color.green.bold('i')}ngresses]",
           "[#{color.green.bold('s')}ervices]",
+          "[#{color.green.bold('g')}enerators]",
           "[#{color.cyan('order')}: #pods (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), #{color.cyan('n')}ode name]",
         ].join(' ')
         "#{s}> "

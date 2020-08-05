@@ -49,6 +49,11 @@ module Ui
         done!
       end
 
+      def go_generators
+        app.select(:generators)
+        done!
+      end
+
       def go_services
         app.select(:services)
         done!
@@ -167,6 +172,11 @@ module Ui
 
         if event.value == 's'
           go_services
+          return
+        end
+
+        if event.value == 'g'
+          go_generators
           return
         end
 
