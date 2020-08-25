@@ -41,6 +41,7 @@ $settings[:profile] ||= 'default'
 
 # always preset to the current kubectx cluster
 $settings[:cluster] = `cat ${HOME}/.kube/config | grep current-context | cut -d ' ' -f2`.chomp
+$settings[:region] = `cat ${HOME}/.kube/config | grep current-context | cut -d':' -f5`.chomp
 $settings[:resource] = :nodes
 $settings[:cloudwatch] = false
 $settings[:verbose] = false
@@ -103,21 +104,7 @@ cluster_name=context['name'].split('/')[1]
 
 instances = InstanceMapper.new(credentials, cluster_name, $settings)
 
-# client = Kubeclient::Client.new(
-#   endpoint,
-#   'v1',
-#   auth_options: auth_options,
-#   ssl_options: { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
-# )
-#
-# clientv1beta = Kubeclient::Client.new(
-#   "#{endpoint}/apis/extensions",
-#   'v1beta1',
-#   auth_options: auth_options,
-#   ssl_options: { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
-# )
-
-version = Aws::EKS::Client.new(credentials: credentials).describe_cluster(name: cluster_name)
+version = Aws::EKS::Client.new(credentials: credentials, region: $settings[:region]).describe_cluster(name: cluster_name)
 
 console = Ui::Console.new(
   VersionManager.new(version, endpoint, auth_options),
