@@ -5,17 +5,15 @@ module Ui
   # paginator because I keep having to reimplement this and keep making bugs
   class Pane
 
-    attr_reader :pages, :rows
+    attr_reader :pages, :rows, :color
 
     # generate a new paginator of length data.length and rows h
     def initialize(data, h = TTY::Screen.height)
       @rows = h
+      @color = Pastel.new
+
       @selected = 0
       update!(data)
-    end
-
-    def color
-      @pastel ||= ::Pastel.new
     end
 
     # send a new dataset through

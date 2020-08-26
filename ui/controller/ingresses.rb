@@ -1,5 +1,3 @@
-require_relative 'base'
-
 module Ui
   module Controller
     # ui to render ingress information

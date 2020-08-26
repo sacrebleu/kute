@@ -7,7 +7,7 @@ module Ui
       class Row < Ui::Pane::SelectableRow
         # attributes that don't match a column name won't be rendered
         # attr_reader :node, :region, :version
-        attr_reader :region, :version, :age, :color
+        attr_reader :region, :version, :age
 
         def initialize(node, instance, color)
           @name = node[:name]
@@ -43,7 +43,7 @@ module Ui
           columns.each do |column|
             m = column.name
             v = send(m)
-            column.rejigger(color.strip(v).length + 2) if v
+            column.rejigger(@color.strip(v).length + 2) if v
           end
         end
 
@@ -55,9 +55,9 @@ module Ui
         def pods
           s = format('%d/%d', @pods[0], @pods[1])
           if  @pods[2] > 0.9
-            color.red(s)
+            @color&.red(s)
           elsif @pods[2] > 0.8
-            color.yellow(s)
+            @color&.yellow(s)
           else
             s
           end
@@ -69,9 +69,9 @@ module Ui
 
         def name
           if selected?
-            color.white.bold(@name) + color.bold.yellow(">")
+            @color.white.bold(@name) + @color.bold.yellow(">")
           else
-            @container_health ? @name : "#{color.yellow(@name)}#{color.bold.red("*")}"
+            @container_health ? @name : "#{@color.yellow(@name)}#{@color.bold.red("*")}"
           end
         end
 
@@ -83,9 +83,9 @@ module Ui
         def volumes
           s = format('%d/%d', @volumes[0], @volumes[1])
           if  @volumes[2] > 0.9
-            color.red s
+            @color.red s
           elsif @volumes[2] > 0.8
-            color.yellow s
+            @color.yellow s
           else
             s
           end
@@ -94,13 +94,13 @@ module Ui
         # render an ansi status string for the node
         def status
           if @status['Ready'] != 'True'
-            color.red 'X'
+            @color.red 'X'
           elsif @status['MemoryPressure'] != 'False'
-            color.yellow 'Mem'
+            @§color.yellow 'Mem'
           elsif @status['DiskPressure'] != 'False'
-            color.yello 'Dsk'
+            @color.yello 'Dsk'
           elsif @status['PIDPressure'] != 'False'
-            color.yellow 'Pid'
+            @color.yellow 'Pid'
           else
             'Ok'
           end
@@ -109,11 +109,11 @@ module Ui
         # report on node taints
         def taints
           res = if @taints&.any?{|s| s.start_with?('NodeWithImpaired') }
-                  color.yellow 'Impaired'
+                  @color.yellow 'Impaired'
                 elsif @taints&.any?{|s| s.end_with?('PreferNoSchedule') }
-                  color.cyan 'PrefNoSchedule'
+                  @color.cyan 'PrefNoSchedule'
                 elsif @taints&.any?{|s| s.end_with?('NoSchedule') }
-                  color.red 'NoSchedule'
+                  @color.red 'NoSchedule'
                 else
                   ''
                 end
@@ -123,7 +123,7 @@ module Ui
         # report on any affinity label that's been set
         def affinity
           if @affinity == 'monitoring'
-            color.bright_cyan @affinity
+            @color.bright_cyan @affinity
           else
             @affinity
           end
@@ -131,11 +131,11 @@ module Ui
 
         def threshold(v, thresholds = { red: 90, yellow: 75, bold: 50})
           if v > thresholds[:red]
-            color.bold.on_red v.to_s
+           @color.bold.on_red v.to_s
           elsif v > thresholds[:yellow]
-            color.bright_yellow v.to_s
+           @color.bright_yellow v.to_s
           elsif v > thresholds[:bold]
-            color.bright_white v.to_s
+            @color.bright_white v.to_s
           else
             v.to_s
           end
@@ -264,7 +264,7 @@ module Ui
         cwi = @instances.instances
         t_n = @model.nodes
         @nodes = t_n.map do |node|
-          r = Row.new(node, cwi ? cwi[node[:name]] : {} , @pane.color)
+          r = Ui::Cards::Nodes::Row.new(node, (cwi ? cwi[node[:name]] : {}), @pane.color)
           r.rejigger(@columns)
           r
         end
