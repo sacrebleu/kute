@@ -55,15 +55,15 @@ OptionParser.new do |opts|
     $settings[:verbose] = true
   end
 
-  opts.on('-p', '--profile', 'Specify the profile to use for connection') do |v|
+  opts.on('-p', '--profile PROFILE', 'Specify the profile to use for connection') do |v|
     $settings[:profile] = v
   end
 
-  opts.on('-n', '--cluster-name', 'Specify the cluster name for the bearer auth token') do |v|
+  opts.on('-n', '--cluster-name NAME', 'Specify the cluster name for the bearer auth token') do |v|
     $settings[:cluster_name] = v
   end
 
-  opts.on('-c', '--cluster', 'Specify the cluster you wish to connect to') do |v|
+  opts.on('-c', '--cluster CLUSTER', 'Specify the cluster you wish to connect to') do |v|
     $settings[:cluster] = v
   end
 
