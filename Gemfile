@@ -5,6 +5,7 @@ ruby '~> 2.5' # support all 2.5
 
 gem 'pastel', '0.7.4'
 gem 'tty-prompt', '0.21.0'
+gem 'tty-spinner', '0.9.2'
 # gem 'pastel', git: 'https://github.com/piotrmurach/pastel'
 # gem 'tty', git: 'https://github.com/sacrebleu/tty'
 
