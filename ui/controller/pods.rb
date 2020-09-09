@@ -18,6 +18,10 @@ module Ui
         model.for_node(node)
       end
 
+      def all
+        model.all
+      end
+
       # when did we last refresh
       def render_refresh_time
         "#{@pattern ? "search: /#{@pattern}/" : ''} page: #{model.index} Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
@@ -32,6 +36,7 @@ module Ui
       end
 
       def go_nodes
+        # app.nodes.refresh(true) unless node
         app.select(:nodes, false)
         done!
       end

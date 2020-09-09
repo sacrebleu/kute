@@ -7,8 +7,15 @@ module Model
     end
 
     # retrieve node list
-    def pods(node)
-      pods = @client.get_pods(field_selector: "spec.nodeName=#{node}").map do |p|
+    def pods(node=nil)
+
+      res = if node
+              @client.get_pods(field_selector: "spec.nodeName=#{node}")
+            else
+              @client.get_pods
+            end
+
+      pods = res.map do |p|
         {
           name: p.metadata.name,
           node: node,
@@ -18,11 +25,11 @@ module Model
           serviceAccount: p.spec.serviceAccount,
           status: p.status.phase,
           ip: p.status.podIP,
-          running: p.status.containerStatuses.select { |e| e.state.running }.length,
-          restarts: p.status.containerStatuses.collect { |e| e[:restartCount] }.reduce(:+),
+          running: p.status.containerStatuses&.select { |e| e.state.running }&.length,
+          restarts: p.status.containerStatuses&.collect { |e| e[:restartCount] }&.reduce(:+),
           ports: (p.spec.containers || [])
                    .map{ |c| "#{c.name} #{(c.ports || [])
-                                            .map{|p| "#{p[:protocol]}:#{p[:containerPort]}"}.join(",")}" }
+                    .map{|p| "#{p[:protocol]}:#{p[:containerPort]}"}.join(",")}" }
                    .join(',')
         }
       end

@@ -83,6 +83,14 @@ module Ui
         s.split("\n").each{ |s| log_pane << s }
       end
 
+      def previous_page
+        if @tail
+          unwatch_logs
+        else
+          previous
+        end
+      end
+
       def unwatch_logs
         @tail = false
         log_pane.clear

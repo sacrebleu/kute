@@ -49,6 +49,11 @@ module Ui
         done!
       end
 
+      def go_pods
+        app.select(:pods)
+        done!
+      end
+
       def go_generators
         app.select(:generators)
         done!
@@ -163,6 +168,11 @@ module Ui
           c_topleft
           print cursor.clear_screen
           exit(1)
+        end
+
+        if event.value == 'p'
+          go_pods
+          return
         end
 
         if event.value == 'n'

@@ -23,16 +23,17 @@ module Ui
       def prompt
         s = [
           "[config #{color.green.bold('m')}aps]",
-          "[#{color.green.bold('i')}ngresses]",
-          "[#{color.green.bold('s')}ervices]",
           "[#{color.green.bold('g')}enerators]",
+          "[#{color.green.bold('i')}ngresses]",
+          "[all #{color.green.bold('p')}ods]",
+          "[#{color.green.bold('s')}ervices]",
           "[#{color.cyan('order')}: #pods (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), #{color.cyan('n')}ode name]",
         ].join(' ')
         "#{s}> "
       end
 
-      def go_pods(node)
-        app.pods.for_node(node)
+      def go_pods(node=nil)
+        node ? app.pods.for_node(node) : app.pods.all
         app.select(:pods)
         done!
       end
@@ -41,7 +42,7 @@ module Ui
       def handle(evt)
         super(evt)
 
-        if evt.key.name == :right || evt.value == 'p' || evt.key.name == :enter || evt.key.name == :return
+        if evt.key.name == :right || evt.key.name == :enter || evt.key.name == :return
           n = model.selected.to_s
           go_pods(n)
         end

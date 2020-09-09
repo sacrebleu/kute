@@ -25,7 +25,7 @@ module Ui
         end
 
         def containers(pod)
-          pod[:running] < pod[:containers] ?
+          (pod[:running] || 0) < (pod[:containers] || 0) ?
             "#{color.yellow(pod[:running])}/#{pod[:containers]}" : "#{pod[:running]}/#{pod[:containers]}"
         end
 
@@ -84,6 +84,10 @@ module Ui
       # set the list of pods to render
       def for_node(node)
         @node = node
+        refresh(true)
+      end
+
+      def all
         refresh(true)
       end
 

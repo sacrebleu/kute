@@ -55,7 +55,7 @@ OptionParser.new do |opts|
     $settings[:verbose] = true
   end
 
-  opts.on('-p', '--profile PROFILE', 'Specify the profile to use for connection') do |v|
+  opts.on('--profile PROFILE', 'Specify the profile to use for connection') do |v|
     $settings[:profile] = v
   end
 
@@ -69,6 +69,10 @@ OptionParser.new do |opts|
 
   opts.on('-m', '--maps', 'Start with a list of cluster config maps') do |_|
     $settings[:selected] = :config_maps
+  end
+
+  opts.on('-p', '--pods', 'List all pods running in the cluster') do |_|
+    $settings[:selected] = :pods
   end
 
   opts.on('-g', '--generators', 'Start with a list of cluster pod generators [deployments, stateful sets, daemonsets and replicasets]') do |_|
