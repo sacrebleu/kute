@@ -50,6 +50,14 @@ module Ui
       def index
         pane.display_page
       end
+
+      def _rj(s, w)
+        Ui::Layout::Justifier.rjust(s, w)
+      end
+
+      def _lj(s, w)
+        Ui::Layout::Justifier.ljust(s, w)
+      end
     end
   end
 end

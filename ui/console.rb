@@ -16,6 +16,7 @@ module Ui
       @reader = TTY::Reader.new
       @cards = {
         nodes: Ui::Controller::Nodes.new(self, Ui::Cards::Nodes.new(version_manager, instances)),
+        node_details: Ui::Controller::NodeDetails.new(self, Ui::Cards::Node.new(version_manager)),
         pods: Ui::Controller::Pods.new(self, Ui::Cards::Pods.new(version_manager)),
         pod_details: Ui::Controller::PodDetails.new(self, Ui::Cards::Pod.new(version_manager)),
         services: Ui::Controller::Services.new(self, Ui::Cards::Services.new(version_manager)),
@@ -37,6 +38,10 @@ module Ui
 
     def nodes
       @cards[:nodes]
+    end
+
+    def node_details
+      @cards[:node_details]
     end
 
     def pod_details

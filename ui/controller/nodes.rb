@@ -38,6 +38,12 @@ module Ui
         done!
       end
 
+      def go_node(node=nil)
+        app.node_details.for_node(node)
+        app.select(:node_details)
+        done!
+      end
+
       # node keypresses
       def handle(evt)
         super(evt)
@@ -45,6 +51,11 @@ module Ui
         if evt.key.name == :right || evt.key.name == :enter || evt.key.name == :return
           n = model.selected.to_s
           go_pods(n)
+        end
+
+        if evt.value == 't' || evt.value == '.'
+          n = model.selected.to_s
+          go_node(n)
         end
 
         if evt.value == 'a'

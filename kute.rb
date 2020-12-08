@@ -11,6 +11,7 @@ require 'aws-sdk-eks'
 require 'kubeclient'
 require 'aws-sdk-ec2'
 require 'aws-sdk-cloudwatch'
+require 'aws-sdk-iam'
 require 'fileutils'
 require 'optparse'
 require 'concurrent-ruby'
@@ -108,12 +109,18 @@ cluster_name=context['name'].split('/')[1]
 
 instances = InstanceMapper.new(credentials, cluster_name, $settings)
 
-version = Aws::EKS::Client.new(credentials: credentials, region: $settings[:region]).describe_cluster(name: cluster_name)
+begin
+  version = Aws::EKS::Client.new(credentials: credentials, region: $settings[:region]).describe_cluster(name: cluster_name)
 
-console = Ui::Console.new(
-  VersionManager.new(version, endpoint, auth_options),
-  context,
-  instances)
+  console = Ui::Console.new(
+    VersionManager.new(version, endpoint, auth_options),
+    context,
+    instances)
 
-console.select($settings[:selected] || :nodes)
+  console.select($settings[:selected] || :nodes)
+rescue Aws::EKS::Errors::ResourceNotFoundException => e
+  puts "AWS_PROFILE: #{ENV["AWS_PROFILE"] || "not configured"}"
+  puts "Role: #{Aws::STS::Client.new(credentials: credentials).get_caller_identity["arn"]}"
+  puts "EKS cluster #{cluster_name} not found in region #{$settings[:region]}."
+end
 

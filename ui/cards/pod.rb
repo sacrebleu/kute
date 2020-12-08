@@ -1,7 +1,7 @@
 # generates a cli output of the pods belonging to an eks node
 module Ui
   module Cards
-    class Pod
+    class Pod < Base
 
       attr_reader :pod, :log_pane
 
@@ -66,14 +66,6 @@ module Ui
 
       def conditions
         pod.status.conditions.map {|c| c[:type] ? "+#{color.green(c[:type].to_s)}" : "-#{pastel.red(c[:type].to_s)}" }.join(' ')
-      end
-
-      def _rj(s, w)
-        Ui::Layout::Justifier.rjust(s, w)
-      end
-
-      def _lj(s, w)
-        Ui::Layout::Justifier.ljust(s, w)
       end
 
       def watch_logs
@@ -164,7 +156,6 @@ module Ui
           out
         end
       end
-
 
       def select_next!
         self.next

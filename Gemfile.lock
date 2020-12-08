@@ -96,6 +96,8 @@ GEM
       tty-screen (~> 0.7)
       wisper (~> 2.0.0)
     tty-screen (0.8.1)
+    tty-spinner (0.9.2)
+      tty-cursor (~> 0.7)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.7)
@@ -116,6 +118,7 @@ DEPENDENCIES
   rspec (~> 3.9)
   rspec-core (~> 3.9)
   tty-prompt (= 0.21.0)
+  tty-spinner (= 0.9.2)
 
 RUBY VERSION
    ruby 2.5.8p224
