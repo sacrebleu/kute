@@ -65,30 +65,39 @@ module Ui
       end
 
       def ratio(v1, v2, thresholds = {warn: 0.75, critical: 0.9})
-        if v1.to_i/v2.to_f > thresholds[:critical]
-           "#{color.red(v1)}/#{v2}"
-        elsif v1.to_i/v2.to_f > thresholds[:warn]
-          "#{color.yellow(v1)}/#{v2}"
-        else
-          "#{v1}/#{v2}"
+
+        begin
+          if (v1.to_i/v2.to_f) > thresholds[:critical]
+             "#{color.red(v1)}/#{v2}"
+          elsif (v1.to_i/v2.to_f) > thresholds[:warn]
+            "#{color.yellow(v1)}/#{v2}"
+          else
+            "#{v1}/#{v2}"
+          end
+        rescue => e
+          puts e.backtrace.join("\n")
         end
       end
 
       def remainder_as_percentage(t, a, thresholds = { warn: 0.75, critical: 0.9 })
         ratio = (t.to_i - a.to_i) / t.to_f
 
-        if ratio > thresholds[:critical]
-          color.bold.red("%.2d" % (ratio*100.0))
-        elsif ratio >  thresholds[:warn]
-          color.yellow("%.2d" % (ratio*100.0))
-        else
-          ("%.d" % (ratio*100.0))
+        begin
+          if ratio > thresholds[:critical]
+            color.bold.red("%.2d" % (ratio*100.0))
+          elsif ratio >  thresholds[:warn]
+            color.yellow("%.2d" % (ratio*100.0))
+          else
+            ("%.d" % (ratio*100.0))
+          end
+        rescue => e
+          puts e.backtrace.join("\n")
         end
       end
 
       def render
-        node_mem = Ui::Util::Space.binarytohuman(node[:capacity][:memory])
-        nod_avail_mem = Ui::Util::Space.demili(node[:available_capacity][:memory])
+        node_mem = Ui::Util::Space.memorize(node[:capacity][:memory])
+        node_avail_mem = Ui::Util::Space.memorize(node[:available_capacity][:memory])
 
         space = Ui::Util::Space.binarytohuman(node[:capacity][:ephemeral])
         avail_space = node[:available_capacity][:ephemeral].to_i
@@ -102,7 +111,7 @@ module Ui
 
         volumes:         #{_rj(ratio(node[:volume_count], node[:capacity][:ebs_volumes]), 8)}  
         cpus:            #{_rj(node[:capacity][:cpus], 8)}
-        total memory:    #{_rj(Ui::Util::Space.humanize(node_mem), 8)} | avail: #{_rj(Ui::Util::Space.humanize(nod_avail_mem), 8)} | used: #{_rj(remainder_as_percentage(node_mem, nod_avail_mem), 8)}%
+        total memory:    #{_rj(Ui::Util::Space.humanize(node_mem), 8)} | avail: #{_rj(Ui::Util::Space.humanize(node_avail_mem), 8)} | used: #{_rj(remainder_as_percentage(node_mem, node_avail_mem), 8)}%
         ephemeral space: #{_rj(Ui::Util::Space.humanize(space), 8)}  | avail: #{_rj(Ui::Util::Space.humanize(avail_space), 8)} | used: #{_rj(remainder_as_percentage(space, avail_space), 8)}%
         pods:            #{_rj(ratio(node[:pods], node[:capacity][:pods]), 8)}
 
@@ -124,6 +133,9 @@ module Ui
         end
 
         out
+      rescue => e
+        puts e.message
+        puts e.backtrace.join("\n")
       end
 
       def select_next!

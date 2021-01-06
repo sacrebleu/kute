@@ -2,6 +2,16 @@ module Ui
   module Util
     class Space
 
+      def self.memorize(s)
+        if s.downcase.end_with?('m')
+          demili(s)
+        elsif s.downcase.end_with?('ki')
+          binarytohuman(s)
+        else
+          s
+        end
+      end
+
       def self.demili(s)
         sd = s.downcase
         if sd.end_with?('m')

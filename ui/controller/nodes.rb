@@ -27,6 +27,7 @@ module Ui
           "[#{color.green.bold('i')}ngresses]",
           "[all #{color.green.bold('p')}ods]",
           "[#{color.green.bold('s')}ervices]",
+          "[node de#{color.green.bold('t')}ails]",
           "[#{color.cyan('order')}: #pods (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), #{color.cyan('n')}ode name]",
         ].join(' ')
         "#{s}> "
