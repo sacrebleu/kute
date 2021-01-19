@@ -87,6 +87,10 @@ OptionParser.new do |opts|
   opts.on('-i', '--ingresses', 'Start with a list of cluster ingresses') do |_|
     $settings[:selected] = :ingresses
   end
+
+  opts.on('-r', '--region', 'Specify the region in which the cluster resides in the event your context is malformed') do |region|
+    $settings[:region] = region
+  end
 end.parse!
 
 # extract servers and endpoints

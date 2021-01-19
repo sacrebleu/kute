@@ -13,10 +13,14 @@ else
     echo Local revision differs
 fi
 
-sed -i "3s/version.*$/version $REV/" ReadMe.md
+sed -i "3s/version.*$/version $LREV/" ReadMe.md
 
 echo Bumped version number in ReadMe.md
 
-git commit -m "release $REV - commit and push to master"
+git commit -m "release $LREV - commit and push to master"
 
 git push origin master
+
+git tag $LREV
+
+git push --tags
