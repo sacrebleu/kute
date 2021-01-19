@@ -88,10 +88,12 @@ OptionParser.new do |opts|
     $settings[:selected] = :ingresses
   end
 
-  opts.on('-r', '--region', 'Specify the region in which the cluster resides in the event your context is malformed') do |region|
+  opts.on('-r', '--region REGION', 'Specify the region in which the cluster resides in the event your context is malformed') do |region|
     $settings[:region] = region
   end
 end.parse!
+
+pp $settings[:region]
 
 # extract servers and endpoints
 context = KubeConfig.extract.values.select{|v| v['name'] == $settings[:cluster]}.first
