@@ -1,6 +1,6 @@
 ## kute
 
-###### version 0.0.15
+###### version 0.0.16
 
 ###### TODO
 
@@ -41,17 +41,24 @@ The node listing displays:
 * EKS client version of the node
 
 The currently selected node is highlighted, and if you wish you can drill down into this node to see details
-on the pods and their health.  Nodes with some sort of pod or container related issue are coloured yellow,
-healthy nodes are terminal default.  Select the node of interest and hit `enter` or `right` to drill down into it.
+on the pods and their health, or view metadata about a particular node.  
 
-###### Nodes pane sorting:
-* `a` will sort by pod occupancy in ascending value
-* `d` will sort by pod occupancy in descending value
-* `@` will sort by node name
+Nodes with some sort of pod or container related issue are coloured yellow, healthy nodes are terminal default.  
+
+Select the node of interest and hit `enter` or `right` to drill down into pods; `.` displays node metadata.
+
+#### Node metadata
+
+![Kute can display some statistics of a selected node](docs/node.png "Node information")
+
+It is possible to view more detailed information about a node from its metadata page - here you can see things like 
+cpu count, provisioned disk and memory, and any status flags which may have triggered e.g `MemoryPressure`
+
+Any taints that are set on the node will also be listed here.
 
 #### Pods on a node
 
-![Kute can display some statistics of a selected node's pods](docs/node.png "pod listing for a node")
+![Kute can display some statistics of a selected node's pods](docs/pods.png "pod listing for a node")
 
 In the node details screen, you are presented with a list of pods running on the selected node.  
 The pod listing displays:
@@ -111,47 +118,50 @@ Ingresses linked to a `public` ingress controller will be highlighted, as will t
 
 Selecting an ingress and hitting `right` or `enter` will bring up a pane showing details of that ingress
 
-###### Ingress details
+#### Ingress details
 
 Ingress details shows elements such as labels, annotations, the load balancer bound to the ingress, and the service bound to the ingress.
 
 ![Kute can display the ingresses and their namespaces](./docs/ingress.png "Details of a selected ingress")
 
-###### Default settings
 
-By default, `kute` displays the following columns of data:
+#### Generators
 
- * Node name
- * Pod count (current / maximum), > 80% occupancy indicated with a `*`
- * Volume count (current / maximum), >80% occupancy indicated with a `*`
- * Status, broken down as 
-   * X if kubelet is not posting Ready
-   * Mem if the node is under memory pressure
-   * Dsk if the node is under disk pressure
-   * Pid if the node is under process pressure
-   * Ok otherwise
- * Taints, broken down as
-   * Impaired if the node has a taint prefixed by `NodeWithImpaired`
-   * PrefNoSchedule if the node has been manually tainted with `PreferNoSchedule`
-   * NoSchedule if the node has any taint suffixed with `NoSchedule` not caught above
- * Affinity, based on a label `kubernetes.io/affinity` that can be used for pod affinity
- * Version, the kubelet version on the node.    
- 
-Other options will be added to this list. 
+Kute can list DaemonSets, StatefulSets and Deployments
+
+![Kute can display the generators and their namespaces](./docs/generators.png "Listing of generators")
+
+#### Generator Details
+
+Kute can show information and metadata about DaemonSets, StatefulSets and Deployments, including the containers that they
+will spin up.
+
+![Kute can display the details of a generator](./docs/generator.png "Listing of generators")
+
+
+#### Config Maps
+
+Kute lists config maps
+
+![Kute can display lists of config maps](./docs/config-maps.png "Listing of config maps")
+
+and can show some information from within them.
+
+![Kute can display limited information from within config maps](./docs/config_map.png "Listing of internals of config map")
 
 ###### Installation
 
-Ruby 2.5.1 is required by default.  If you do not have ruby, or are using a system ruby,
+Ruby 2.5.8 is required by default.  If you do not have ruby, or are using a system ruby,
 it is suggested that you install RBEnv as detailed here: [https://github.com/rbenv/rbenv](https://github.com/rbenv/rbenv)
 
-Once rbenv is installed, install ruby 2.5.1 by running `rbenv install` from the root folder of `kute`
+Once rbenv is installed, install ruby 2.5.8 by running `rbenv install` from the root folder of `kute`
 
     jbotha@mundus:~/ruby/kute$ rbenv install
     
-Once ruby 2.5.1 is installed, test it:
+Once ruby 2.5.8 is installed, test it:
 
     jbotha@mundus:~/ruby/kute$ ruby --version
-    ruby 2.5.1p57 (2018-03-29 revision 63029) [x86_64-darwin17] 
+    ruby 2.5.8p224 (2020-03-31 revision 67882) [x86_64-darwin17]
     
 Next, install bundler:    
     
@@ -173,12 +183,16 @@ And then install the gems required by kute:
     
 Finally, verify that kute can be run:
 
-    jbotha@mundus:~/ruby/kute$ ./kute.rb -h
-    Usage: kute.rb [options]
+    jbotha@mundus:~$ kute -h
+    kute [0.0.16]
+    usage: kute.rb [options]
         -v, --[no-]verbose               Log debug information to stdout
-        -p, --profile                    Specify the profile to use for connection
-        -n, --cluster-name               Specify the cluster name for the bearer auth token
-        -c, --cluster                    Specify the cluster you wish to connect to
+            --profile PROFILE            Specify the profile to use for connection
+        -m, --maps                       Start with a list of cluster config maps
+        -p, --pods                       List all pods running in the cluster
+        -g, --generators                 Start with a list of cluster pod generators [deployments, stateful sets, daemonsets and replicasets]
+        -s, --services                   Start with a list of cluster services
+        -i, --ingresses                  Start with a list of cluster ingresses
     
 ###### Authentication
       
@@ -186,12 +200,8 @@ Finally, verify that kute can be run:
 known EKS clusters.  
 
 It will attempt to locate the `current-context` within this file and use the named cluster
-  as its endpoint unless an alternative is provided via `--cluster`.  
+  as its endpoint. 
   
 It looks for the environment variable `AWS_PROFILE` and defaults to the `default`
 profile if none is specified via `--profile`.   
-
-You can manually specify the cluster name for authentication via `--cluster-name` in the event you
-are experiencing authentication issues.
-
                   
