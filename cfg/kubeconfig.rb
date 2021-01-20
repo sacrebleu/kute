@@ -1,5 +1,8 @@
 # This utility class parses $HOME/.kube/config for necessary information and presents it in a format that kute
 # can use
+#
+require 'yaml'
+
 class KubeConfig
 
   # search path
@@ -7,47 +10,21 @@ class KubeConfig
     "#{ENV["HOME"]}/.kube/config"
   end
 
-  # load kubeconfig and extract key items
-  #
-  # generate a map of
-  #
-  # cluster: {
-  #   name: <name>,
-  #   endpoint: <endpoint>,
-  #   region: <region>
-  #
-  # }
-  #
-  def self.extract
+  def self.current_context
     s = YAML.load_file path
 
-    # link contexts to clusters
-    res = Hash[s['contexts'].map do |s|
-      n = s['name']
-      c = s['context']['cluster']
+    current_context = s['current-context']
+    context = s['contexts'].select {|ctx| ctx['name'] == current_context }.first
 
-      [
-        c,  {
-          'cluster' => c,
-          'name' => n
-        }
-      ]
-    end
-    ]
+    cl = s['clusters'].map do |s|
+      {
+        'cluster_name' => s['name'],
+        'server' => s['cluster']['server'],
+        'region' => eks_region(s['cluster']['server'])
+      }
+    end.select{ |s| s['cluster_name'] == context['context']['cluster'] }.first
 
-    s['clusters'].map do |s|
-      k = s['name']
-
-      if res[k]
-        res[k]['cluster_name'] = k.split('/')[1]
-        res[k]['server'] = s['cluster']['server']
-        res[k]['region'] = eks_region(s['cluster']['server'])
-      # else
-      #    Log.dump "Unknown context in", path.cyan, ":",  k.yellow
-      end
-    end
-
-    res
+    cl.merge(context)
   end
 
   # use regex to extract the region from the server url

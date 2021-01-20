@@ -15,7 +15,7 @@ require 'aws-sdk-iam'
 require 'fileutils'
 require 'optparse'
 require 'concurrent-ruby'
-# require 'wisper'
+require 'yaml'
 
 require 'pp'
 
@@ -40,14 +40,14 @@ EXIT_RENDER_ERROR=2
 $settings[:profile] = ENV['AWS_PROFILE'] if ENV['AWS_PROFILE']
 $settings[:profile] ||= 'default'
 
+path = "#{ENV['HOME']}/.kube/config"
+
+raise "Error - could not find kubernetes config #{path}" unless File.exist?(path)
 # always preset to the current kubectx cluster
 $settings[:cluster] = `cat ${HOME}/.kube/config | grep current-context | cut -d ' ' -f2`.chomp
-$settings[:region] = `cat ${HOME}/.kube/config | grep current-context | cut -d':' -f5`.chomp
 $settings[:resource] = :nodes
 $settings[:cloudwatch] = false
 $settings[:verbose] = false
-
-# $pastel = Pastel.new
 
 OptionParser.new do |opts|
   opts.banner = "kute [#{VERSION}] \nusage: kute.rb [options]"
@@ -58,14 +58,6 @@ OptionParser.new do |opts|
 
   opts.on('--profile PROFILE', 'Specify the profile to use for connection') do |v|
     $settings[:profile] = v
-  end
-
-  opts.on('-n', '--cluster-name NAME', 'Specify the cluster name for the bearer auth token') do |v|
-    $settings[:cluster_name] = v
-  end
-
-  opts.on('-c', '--cluster CLUSTER', 'Specify the cluster you wish to connect to') do |v|
-    $settings[:cluster] = v
   end
 
   opts.on('-m', '--maps', 'Start with a list of cluster config maps') do |_|
@@ -93,30 +85,26 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-pp $settings[:region]
-
-# extract servers and endpoints
-context = KubeConfig.extract.values.select{|v| v['name'] == $settings[:cluster]}.first
+context = KubeConfig.current_context
 
 unless context
-  Log.error "Unable to determine context for #{settings[:cluster]}"
+  Log.error "Unable to determine context for cluster: #{settings[:cluster]}"
   exit 1
 end
 
+# pp context
 endpoint = context['server']
-
+cluster_name=context['context']['cluster'].split('/').last
 credentials = Aws::SharedCredentials.new(profile_name: $settings[:profile]).credentials
 
 auth_options = {
-  bearer_token: Kubeclient::AmazonEksCredentials.token(credentials, $settings[:cluster_name] || context['cluster_name'])
+  bearer_token: Kubeclient::AmazonEksCredentials.token(credentials, cluster_name)
 }
-
-cluster_name=context['name'].split('/')[1]
 
 instances = InstanceMapper.new(credentials, cluster_name, $settings)
 
 begin
-  version = Aws::EKS::Client.new(credentials: credentials, region: $settings[:region]).describe_cluster(name: cluster_name)
+  version = Aws::EKS::Client.new(credentials: credentials, region: context['region']).describe_cluster(name: cluster_name)
 
   console = Ui::Console.new(
     VersionManager.new(version, endpoint, auth_options),
@@ -127,6 +115,8 @@ begin
 rescue Aws::EKS::Errors::ResourceNotFoundException => e
   puts "AWS_PROFILE: #{ENV["AWS_PROFILE"] || "not configured"}"
   puts "Role: #{Aws::STS::Client.new(credentials: credentials).get_caller_identity["arn"]}"
-  puts "EKS cluster #{cluster_name} not found in region #{$settings[:region]}."
+  puts "EKS cluster #{cluster_name} not found in region #{context['region']}."
+  puts "Context used:"
+  Logger.dump(context)
 end
 

@@ -1,7 +1,7 @@
 # simple logger
 class Log
   def self.info(msg)
-    puts msg.green if $settings[:verbose]
+    puts msg if $settings[:verbose]
   end
 
   def self.dump(*s)
