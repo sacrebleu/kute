@@ -1,6 +1,6 @@
 ## kute
 
-###### version 0.0.16
+###### version 0.0.17
 
 ###### TODO
 
@@ -200,8 +200,9 @@ Finally, verify that kute can be run:
 known EKS clusters.  
 
 It will attempt to locate the `current-context` within this file and use the named cluster
-  as its endpoint. 
+  as its endpoint. Current context is set by [kubectx]([https://github.com/ahmetb/kubectx) - if you aren't
+  using kubectx what is wrong with you :P
   
-It looks for the environment variable `AWS_PROFILE` and defaults to the `default`
+Kute looks for the environment variable `AWS_PROFILE` and defaults to the `default`
 profile if none is specified via `--profile`.   
                   
