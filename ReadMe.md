@@ -1,11 +1,10 @@
 ## kute
 
-###### version 0.0.17
+###### version 0.0.18
 
 ###### TODO
 
 See the [oustanding issue list](https://github.com/sacrebleu/kute/issues)
- 
 
 #### Overview
 
@@ -151,14 +150,14 @@ and can show some information from within them.
 
 ###### Installation
 
-Ruby 2.5.8 is required by default.  If you do not have ruby, or are using a system ruby,
+Ruby 2.7.1 is required by default.  If you do not have ruby, or are using a system ruby,
 it is suggested that you install RBEnv as detailed here: [https://github.com/rbenv/rbenv](https://github.com/rbenv/rbenv)
 
-Once rbenv is installed, install ruby 2.5.8 by running `rbenv install` from the root folder of `kute`
+Once rbenv is installed, install ruby 2.7.1 by running `rbenv install` from the root folder of `kute`
 
     jbotha@mundus:~/ruby/kute$ rbenv install
     
-Once ruby 2.5.8 is installed, test it:
+Once ruby 2.7.1 is installed, test it:
 
     jbotha@mundus:~/ruby/kute$ ruby --version
     ruby 2.5.8p224 (2020-03-31 revision 67882) [x86_64-darwin17]
@@ -184,7 +183,7 @@ And then install the gems required by kute:
 Finally, verify that kute can be run:
 
     jbotha@mundus:~$ kute -h
-    kute [0.0.16]
+    kute [0.0.18]
     usage: kute.rb [options]
         -v, --[no-]verbose               Log debug information to stdout
             --profile PROFILE            Specify the profile to use for connection
