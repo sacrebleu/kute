@@ -1,6 +1,6 @@
 ## kute
 
-###### version 0.0.18
+###### version 0.0.19
 
 ###### TODO
 
@@ -40,9 +40,9 @@ The node listing displays:
 * EKS client version of the node
 
 The currently selected node is highlighted, and if you wish you can drill down into this node to see details
-on the pods and their health, or view metadata about a particular node.  
+on the pods and their health, or view metadata about a particular node.
 
-Nodes with some sort of pod or container related issue are coloured yellow, healthy nodes are terminal default.  
+Nodes with some sort of pod or container related issue are coloured yellow, healthy nodes are terminal default.
 
 Select the node of interest and hit `enter` or `right` to drill down into pods; `.` displays node metadata.
 
@@ -50,7 +50,7 @@ Select the node of interest and hit `enter` or `right` to drill down into pods; 
 
 ![Kute can display some statistics of a selected node](docs/node.png "Node information")
 
-It is possible to view more detailed information about a node from its metadata page - here you can see things like 
+It is possible to view more detailed information about a node from its metadata page - here you can see things like
 cpu count, provisioned disk and memory, and any status flags which may have triggered e.g `MemoryPressure`
 
 Any taints that are set on the node will also be listed here.
@@ -59,7 +59,7 @@ Any taints that are set on the node will also be listed here.
 
 ![Kute can display some statistics of a selected node's pods](docs/pods.png "pod listing for a node")
 
-In the node details screen, you are presented with a list of pods running on the selected node.  
+In the node details screen, you are presented with a list of pods running on the selected node.
 The pod listing displays:
 
 * Pod Name
@@ -74,12 +74,12 @@ The pod listing displays:
 
 If there is an issue with any of the containers (i.e. none are state running or state terminated with exit code 0) then
 that pod is highlighted in yellow, and the status is set to '*'
- 
-Hitting `left` will return  you to the node listing.  You can scroll down to select a pod, then hit  `enter` or `right` to drill down into it. 
+
+Hitting `left` will return  you to the node listing.  You can scroll down to select a pod, then hit  `enter` or `right` to drill down into it.
 
 ![Kute can display the state of a pod's containers](./docs/pod.png "container states for a pod")
 
-Selecting a pod gives an overview of that particular pod, showing information such as how it was generated (e.g StatefulSet, ReplicaSet), 
+Selecting a pod gives an overview of that particular pod, showing information such as how it was generated (e.g StatefulSet, ReplicaSet),
 the state of its various containers (`:waiting`, `:running` or `:terminated`) and varied detailed information on all of them
 such as image, image pull policy, ports, mounts etc.
 
@@ -156,14 +156,14 @@ it is suggested that you install RBEnv as detailed here: [https://github.com/rbe
 Once rbenv is installed, install ruby 2.7.1 by running `rbenv install` from the root folder of `kute`
 
     jbotha@mundus:~/ruby/kute$ rbenv install
-    
+
 Once ruby 2.7.1 is installed, test it:
 
     jbotha@mundus:~/ruby/kute$ ruby --version
     ruby 2.5.8p224 (2020-03-31 revision 67882) [x86_64-darwin17]
-    
-Next, install bundler:    
-    
+
+Next, install bundler:
+
     jbotha@mundus:~/ruby/kute$ gem install bundler
     Fetching: bundler-2.1.1.gem (100%)
     Successfully installed bundler-2.1.1
@@ -171,7 +171,7 @@ Next, install bundler:
     Installing ri documentation for bundler-2.1.1
     Done installing documentation for bundler after 5 seconds
     1 gem installed
-    
+
 And then install the gems required by kute:
 
     jbotha@mundus:~/ruby/kute$ bundle install
@@ -179,11 +179,11 @@ And then install the gems required by kute:
        ...
     Bundle complete! 4 Gemfile dependencies, 24 gems now installed.
     Use `bundle info [gemname]` to see where a bundled gem is installed.
-    
+
 Finally, verify that kute can be run:
 
     jbotha@mundus:~$ kute -h
-    kute [0.0.18]
+    kute [0.0.19]
     usage: kute.rb [options]
         -v, --[no-]verbose               Log debug information to stdout
             --profile PROFILE            Specify the profile to use for connection
@@ -192,16 +192,15 @@ Finally, verify that kute can be run:
         -g, --generators                 Start with a list of cluster pod generators [deployments, stateful sets, daemonsets and replicasets]
         -s, --services                   Start with a list of cluster services
         -i, --ingresses                  Start with a list of cluster ingresses
-    
+
 ###### Authentication
-      
+
 `kute` searches for `${HOME}/.kube/config` and parses it, looking for information to identify
-known EKS clusters.  
+known EKS clusters.
 
 It will attempt to locate the `current-context` within this file and use the named cluster
   as its endpoint. Current context is set by [kubectx]([https://github.com/ahmetb/kubectx) - if you aren't
   using kubectx what is wrong with you :P
-  
+
 Kute looks for the environment variable `AWS_PROFILE` and defaults to the `default`
-profile if none is specified via `--profile`.   
-                  
+profile if none is specified via `--profile`.

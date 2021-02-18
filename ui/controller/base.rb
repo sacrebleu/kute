@@ -8,7 +8,7 @@ module Ui
 
       def initialize(console)
         @app = console
-        @buffer = ""
+        @buffer = ''
         @reader = console.reader
       end
 
@@ -21,17 +21,14 @@ module Ui
       end
 
       def deregister
-        begin
-          @reader.send(:local_registrations).clear
-
-        rescue => e
-          puts e.message
-          puts e.backtrace.join("\n")
-        end
+        @reader.send(:local_registrations).clear
+      rescue StandardError => e
+        puts e.message
+        puts e.backtrace.join("\n")
       end
 
       def spin_start
-        @spinner = TTY::Spinner.new("kute-#{VERSION}> [#{color.green($settings[:profile])}] #{color.cyan(@app.context['name'])} :spinner " ,
+        @spinner = TTY::Spinner.new("kute-#{VERSION}> [#{color.green($settings[:profile])}] #{color.cyan(@app.context['name'])} :spinner ",
                                     hide_cursor: true, clear: false, success_mark: '')
         @spinner.auto_spin
       end
@@ -82,7 +79,6 @@ module Ui
         TTY::Screen.height
       end
 
-      #
       def pane_height
         TTY::Screen.height - 2
       end
@@ -94,21 +90,19 @@ module Ui
         spin_start
 
         @buffer = Concurrent::Promises.future do
-          begin
-            model.refresh(f, order)
-            c = render_model
-            spin_stop
-            c_goto(0, 2)
-            c
-          rescue => e
-            spin_stop
-            puts e.message
-            puts e.backtrace.join("\n") if $settings[:verbose]
-            raise e
-          end
+          model.refresh(f, order)
+          c = render_model
+          spin_stop
+          c_goto(0, 2)
+          c
+        rescue StandardError => e
+          spin_stop
+          puts e.message
+          puts e.backtrace.join("\n") if $settings[:verbose]
+          raise e
         end
 
-        print @buffer.value(timeout=15)
+        print @buffer.value(timeout = 15)
 
         c_bottomrighttext(render_refresh_time)
 
@@ -130,7 +124,7 @@ module Ui
         color.bold.cyan(@app.current_view.to_s.split('_').map(&:capitalize).join(' '))
       end
 
-      def c_goto(x,y)
+      def c_goto(x, y)
         print cursor.column(x)
         print cursor.row(y)
       end
@@ -157,14 +151,14 @@ module Ui
       # handle keypress
       def handle(event)
         if event.value == 'r'
-          puts "Refresh"
+          puts 'Refresh'
           refresh(true)
           taint!
           return
         end
 
         if event.value == 'q'
-          puts "Exiting"
+          puts 'Exiting'
           c_topleft
           print cursor.clear_screen
           exit(1)
@@ -200,25 +194,15 @@ module Ui
           return
         end
 
-        if event.key.name == :space
-          model.next_page
-        end
+        model.next_page if event.key.name == :space
 
-        if event.value == 'b'
-          model.previous_page
-        end
+        model.previous_page if event.value == 'b'
 
-        if event.value == '^'
-          model.first_page
-        end
+        model.first_page if event.value == '^'
 
-        if event.value == '$'
-          model.last_page
-        end
+        model.last_page if event.value == '$'
 
-        if event.value == '*'
-          model.filter! nil
-        end
+        model.filter! nil if event.value == '*'
 
         if event.key.name == :up
           model.select_previous!
@@ -259,7 +243,7 @@ module Ui
       # main render loop
       def render(refresh = true)
         refresh(refresh)
-        until done? do
+        until done?
           sleep(100) until tainted?
           untaint!
           refresh(false)

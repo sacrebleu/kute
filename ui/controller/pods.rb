@@ -24,13 +24,13 @@ module Ui
 
       # when did we last refresh
       def render_refresh_time
-        "#{@pattern ? "search: /#{@pattern}/" : ''} page: #{model.index} Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
+        "#{@pattern ? "search: /#{@pattern}/" : ''} page: #{model.index} Refresh: #{model.last_refresh.strftime('%Y-%m-%d %H:%M:%S')}"
       end
 
       # node commands
       def prompt
         s = [
-          "[order: #containers (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), pod #{color.cyan('n')}ame]",
+          "[order: #containers (#{color.cyan.bold('a')}sc/#{color.magenta.bold('d')}esc), pod #{color.cyan('n')}ame]"
         ].join(' ')
         "#{s}> "
       end
@@ -57,34 +57,26 @@ module Ui
         super(evt)
 
         # > and p both fetch pods from the selected node
-        if evt.key.name == :left || evt.value == 'n'
-          go_nodes
-        end
+        go_nodes if evt.key.name == :left || evt.value == 'n'
 
         if evt.key.name == :right || evt.value == 'd' || evt.key.name == :enter || evt.key.name == :return
           go_pod_details(model.selected)
         end
 
-        if evt.value == '@'
-          model.sort!(:pod_name)
-        end
+        model.sort!(:pod_name) if evt.value == '@'
 
-        if evt.value == '#'
-          model.sort!(:container_count)
-        end
+        model.sort!(:container_count) if evt.value == '#'
 
-        if evt.value == '!'
-          model.toggle!(:issues)
-        end
+        model.toggle!(:issues) if evt.value == '!'
 
         if evt.value == '/'
           begin
             deregister
-            @pattern = (reader.read_line "search pattern:").strip
+            @pattern = (reader.read_line 'search pattern:').strip
             model.filter!(@pattern)
             model.select_first!
             register
-          rescue => e
+          rescue StandardError => e
             pp e.backtrace if $settings[:verbose]
             register
           end

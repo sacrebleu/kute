@@ -20,13 +20,13 @@ module Ui
 
       # when did we last refresh
       def render_refresh_time
-        "Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
+        "Refresh: #{model.last_refresh.strftime('%Y-%m-%d %H:%M:%S')}"
       end
 
       # node commands
       def prompt
         s = [
-          "#{color.cyan.bold("b")}ack",
+          "#{color.cyan.bold('b')}ack"
         ].join(' ')
 
         "#{model.service.metadata.namespace}/#{model.service.metadata.name}: #{s}> "
@@ -43,9 +43,7 @@ module Ui
         super(evt)
 
         # > and p both fetch pods from the selected node
-        if evt.key.name == :left || evt.value == 'b' || evt.value == 's'
-          go_services(model.service)
-        end
+        go_services(model.service) if evt.key.name == :left || evt.value == 'b' || evt.value == 's'
 
         if evt.value == 'r' || evt.key.name == :enter
           model.reload!

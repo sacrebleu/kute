@@ -2,7 +2,6 @@
 module Ui
   module Cards
     class Ingresses < Base
-
       # models a row in the report
       class Row < Ui::Pane::SelectableRow
         # attributes that don't match a column name won't be rendered
@@ -30,11 +29,12 @@ module Ui
         def ingress
           return color.yellow('public nginx') if @in == 'ingress-controller-public-nginx'
           return 'private nginx' if @in == 'ingress-controller-internal-nginx'
+
           'unknown'
         end
 
         def status
-          @status == :active ? "Active" : color.yellow("Inactive")
+          @status == :active ? 'Active' : color.yellow('Inactive')
         end
 
         # layout columns
@@ -42,11 +42,11 @@ module Ui
           output = ''
           columns.each do |column|
             m = column.name
-            if m == :name && @selected
-              output << column.render(color.white.bold(@name) + color.bold.yellow(">"))
-            else
-              output << column.render(send(m))
-            end
+            output << if m == :name && @selected
+                        column.render(color.white.bold(@name) + color.bold.yellow('>'))
+                      else
+                        column.render(send(m))
+                      end
           end
           output
         end
@@ -62,7 +62,7 @@ module Ui
           [:namespace, 20, :left],
           [:ingress, 20, :left],
           [:status, 7, :left],
-          [:loadbalancer, 40, :left],
+          [:loadbalancer, 40, :left]
         ].map { |e| Ui::Layout::Column.new(*e) }.freeze
         @ingresses = []
         @pane = Ui::Pane.new(@ingresses, pane_height)
@@ -72,7 +72,7 @@ module Ui
 
       # set the list of pods to render
 
-      def refresh(fetch, order=:default)
+      def refresh(fetch, _order = :default)
         reload! if fetch
         @pane.update!(@ingresses) if fetch
         @pane.first_row! if fetch
@@ -115,9 +115,7 @@ module Ui
 
       # sort nodes by sort function - default is occupancy
       def sort!(method)
-        if method == :ingress_name
-          @pane.sort!{|a, b| a.name <=> b.name }
-        end
+        @pane.sort! { |a, b| a.name <=> b.name } if method == :ingress_name
       end
 
       def filter!(pattern)

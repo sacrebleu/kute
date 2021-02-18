@@ -28,12 +28,12 @@ module Ui
       # render the target according to this column's layout rules
       def render(target)
         align_right? ? Justifier.rjust(target, width) : Justifier.ljust(target, width)
-      rescue => e
+      rescue StandardError => e
         raise "Column #{name} failed: #{e.message}"
       end
 
       def trim(s)
-        s[0..width-2]
+        s[0..width - 2]
       end
     end
 

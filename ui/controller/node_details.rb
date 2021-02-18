@@ -12,6 +12,7 @@ module Ui
       def for_node(pod)
         model.for(pod)
       end
+
       # render the node report
       def render_model
         model.render
@@ -19,7 +20,7 @@ module Ui
 
       # when did we last refresh
       def render_refresh_time
-        "#{@pattern ? "search: /#{@pattern}/" : ''} Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
+        "#{@pattern ? "search: /#{@pattern}/" : ''} Refresh: #{model.last_refresh.strftime('%Y-%m-%d %H:%M:%S')}"
       end
 
       # node commands
@@ -30,12 +31,12 @@ module Ui
           "[#{color.green.bold('i')}ngresses]",
           "[all #{color.green.bold('p')}ods]",
           "[#{color.green.bold('s')}ervices]",
-          "[#{color.cyan('order')}: #pods (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), #{color.cyan('n')}ode name]",
+          "[#{color.cyan('order')}: #pods (#{color.cyan.bold('a')}sc/#{color.magenta.bold('d')}esc), #{color.cyan('n')}ode name]"
         ].join(' ')
         "#{s}> "
       end
 
-      def go_pods(node=nil)
+      def go_pods(node = nil)
         node ? app.pods.for_node(node) : app.pods.all
         app.select(:pods)
         done!
@@ -52,9 +53,7 @@ module Ui
         super(evt)
 
         # > and p both fetch pods from the selected node
-        if evt.key.name == :left || evt.value == 'n'
-          go_nodes
-        end
+        go_nodes if evt.key.name == :left || evt.value == 'n'
       end
     end
   end

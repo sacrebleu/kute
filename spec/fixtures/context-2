@@ -1,0 +1,31 @@
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: lol=
+    server: https://lol.eu-central-1.eks.amazonaws.com
+  name: arn:aws:eks:eu-central-1:11111:cluster/nexmo-whatsapp-eks-dev-1
+contexts:
+- context:
+    cluster: arn:aws:eks:eu-central-1:11111:cluster/nexmo-whatsapp-eks-dev-1
+    namespace: olympus
+    user: arn:aws:eks:eu-central-1:11111:cluster/nexmo-whatsapp-eks-dev-1
+  name: dev-whatsapp-eu-2
+current-context: dev-whatsapp-eu-2
+kind: Config
+preferences: {}
+users:
+- name: arn:aws:eks:eu-central-1:11111:cluster/nexmo-whatsapp-eks-dev-1
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1alpha1
+      args:
+      - --region
+      - eu-central-1
+      - eks
+      - get-token
+      - --cluster-name
+      - nexmo-whatsapp-eks-dev-1
+      command: aws
+      env:
+      - name: AWS_PROFILE
+        value: nexmo-dev

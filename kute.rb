@@ -33,8 +33,8 @@ VERSION = File.read(File.join(File.dirname(__FILE__), './.version')).strip
 
 $settings = {}
 
-EXIT_GENERAL=1
-EXIT_RENDER_ERROR=2
+EXIT_GENERAL = 1
+EXIT_RENDER_ERROR = 2
 
 # default to env, or dev profile if nothing is specified
 $settings[:profile] = ENV['AWS_PROFILE'] if ENV['AWS_PROFILE']
@@ -43,6 +43,7 @@ $settings[:profile] ||= 'default'
 path = "#{ENV['HOME']}/.kube/config"
 
 raise "Error - could not find kubernetes config #{path}" unless File.exist?(path)
+
 # always preset to the current kubectx cluster
 $settings[:cluster] = `cat ${HOME}/.kube/config | grep current-context | cut -d ' ' -f2`.chomp
 $settings[:resource] = :nodes
@@ -68,7 +69,8 @@ OptionParser.new do |opts|
     $settings[:selected] = :pods
   end
 
-  opts.on('-g', '--generators', 'Start with a list of cluster pod generators [deployments, stateful sets, daemonsets and replicasets]') do |_|
+  opts.on('-g', '--generators',
+          'Start with a list of cluster pod generators [deployments, stateful sets, daemonsets and replicasets]') do |_|
     $settings[:selected] = :generators
   end
 
@@ -90,7 +92,7 @@ end
 
 # pp context
 endpoint = context['server']
-cluster_name=context['context']['cluster'].split('/').last
+cluster_name = context['context']['cluster'].split('/').last
 credentials = Aws::SharedCredentials.new(profile_name: $settings[:profile]).credentials
 
 auth_options = {
@@ -100,19 +102,20 @@ auth_options = {
 instances = InstanceMapper.new(credentials, cluster_name, $settings)
 
 begin
-  version = Aws::EKS::Client.new(credentials: credentials, region: context['region']).describe_cluster(name: cluster_name)
+  version = Aws::EKS::Client.new(credentials: credentials,
+                                 region: context['region']).describe_cluster(name: cluster_name)
 
   console = Ui::Console.new(
     VersionManager.new(version, endpoint, auth_options),
     context,
-    instances)
+    instances
+  )
 
   console.select($settings[:selected] || :nodes)
 rescue Aws::EKS::Errors::ResourceNotFoundException => e
-  puts "AWS_PROFILE: #{ENV["AWS_PROFILE"] || "not configured"}"
-  puts "Role: #{Aws::STS::Client.new(credentials: credentials).get_caller_identity["arn"]}"
+  puts "AWS_PROFILE: #{ENV['AWS_PROFILE'] || 'not configured'}"
+  puts "Role: #{Aws::STS::Client.new(credentials: credentials).get_caller_identity['arn']}"
   puts "EKS cluster #{cluster_name} not found in region #{context['region']}."
-  puts "Context used:"
+  puts 'Context used:'
   pp context
 end
-

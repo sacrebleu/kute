@@ -19,16 +19,16 @@ class InstanceMapper
     ec2s = Aws::EC2::Client.new(credentials: credentials).describe_instances(
       filters: [{ name: "tag:kubernetes.io/cluster/#{cluster_name}", values: ['owned'] }]
     )
-             .reservations.collect { |r| r.instances.flatten }
+                           .reservations.collect { |r| r.instances.flatten }
 
     # generate a map of hostname => instance_id
     instance_ids = ec2s.map { |i| i.map { |j| { j.private_dns_name => j.instance_id } } }
-                     .flatten
-                     .reduce({}, :merge)
+                       .flatten
+                       .reduce({}, :merge)
 
     instances = []
 
-    instance_ids.each do |k,v|
+    instance_ids.each do |k, v|
       # get cpu utilisation
       cput = cw.get_metric_statistics(
         namespace: 'ContainerInsights', # required
@@ -36,7 +36,7 @@ class InstanceMapper
         dimensions: [
           {
             name: 'ClusterName', # required
-            value: cluster_name, # required
+            value: cluster_name # required
           },
           {
             name: 'InstanceId',
@@ -85,7 +85,7 @@ class InstanceMapper
       dimensions: [
         {
           name: 'ClusterName', # required
-          value: cluster_name, # required
+          value: cluster_name # required
         },
         {
           name: 'InstanceId',

@@ -16,7 +16,7 @@ module Ui
 
       # when did we last refresh
       def render_refresh_time
-        "#{@pattern ? "search: /#{@pattern}/" : ''} page: #{model.index} Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
+        "#{@pattern ? "search: /#{@pattern}/" : ''} page: #{model.index} Refresh: #{model.last_refresh.strftime('%Y-%m-%d %H:%M:%S')}"
       end
 
       # node commands
@@ -28,18 +28,18 @@ module Ui
           "[all #{color.green.bold('p')}ods]",
           "[#{color.green.bold('s')}ervices]",
           "[node de#{color.green.bold('t')}ails]",
-          "[#{color.cyan('order')}: #pods (#{color.cyan.bold("a")}sc/#{color.magenta.bold("d")}esc), #{color.cyan('n')}ode name]",
+          "[#{color.cyan('order')}: #pods (#{color.cyan.bold('a')}sc/#{color.magenta.bold('d')}esc), #{color.cyan('n')}ode name]"
         ].join(' ')
         "#{s}> "
       end
 
-      def go_pods(node=nil)
+      def go_pods(node = nil)
         node ? app.pods.for_node(node) : app.pods.all
         app.select(:pods)
         done!
       end
 
-      def go_node(node=nil)
+      def go_node(node = nil)
         app.node_details.for_node(node)
         app.select(:node_details)
         done!
@@ -59,27 +59,21 @@ module Ui
           go_node(n)
         end
 
-        if evt.value == 'a'
-          model.sort!(:pods_ascending)
-        end
+        model.sort!(:pods_ascending) if evt.value == 'a'
 
-        if evt.value == 'd'
-          model.sort!(:pods_descending)
-        end
+        model.sort!(:pods_descending) if evt.value == 'd'
 
-        if evt.value == '@'
-          model.sort!(:node_name)
-        end
+        model.sort!(:node_name) if evt.value == '@'
 
         if evt.value == '/'
           begin
             deregister
-            @pattern = (reader.read_line "search pattern:").strip
+            @pattern = (reader.read_line 'search pattern:').strip
             # @pattern = pattern.strip
             model.filter!(@pattern)
             model.select_first!
             register
-          rescue => e
+          rescue StandardError => e
             pp e.backtrace
             register
           end

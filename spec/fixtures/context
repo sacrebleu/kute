@@ -1,0 +1,27 @@
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: lol=
+    server: https://lol.eu-central-1.eks.amazonaws.com
+  name: arn:aws:eks:eu-west-1:11111:cluster/nexmo-eks-dev
+contexts:
+- context:
+    cluster: arn:aws:eks:eu-west-1:11111:cluster/nexmo-eks-dev
+    namespace: monitoring
+    user: arn:aws:eks:eu-west-1:11111:cluster/nexmo-eks-dev
+  name: arn:aws:eks:eu-west-1:11111:cluster/nexmo-eks-dev
+current-context: nexmo-eks-dev
+kind: Config
+preferences: {}
+users:
+- name: nexmo-eks-dev
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1alpha1
+      args:
+      - token
+      - -i
+      - nexmo-eks-dev
+      command: aws-iam-authenticator
+      env: null
+      provideClusterInfo: false

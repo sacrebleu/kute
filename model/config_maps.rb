@@ -18,7 +18,7 @@ module Model
           data: p.data
         }
       end
-      maps.sort_by{ |a| [a[:namespace], a[:name]] }
+      maps.sort_by { |a| [a[:namespace], a[:name]] }
     end
 
     def describe(name, namespace)

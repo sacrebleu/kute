@@ -1,10 +1,9 @@
 module Ui
   module Util
     class DataPane
-
       attr_reader :width, :height
 
-      def initialize(w = TTY::Screen.width, h=TTY::Screen.height - 3, data)
+      def initialize(w = TTY::Screen.width, h = TTY::Screen.height - 3, data)
         @width = w
         @height = h
         @buffer = data
@@ -17,7 +16,7 @@ module Ui
       def push(str)
         @buffer << str
       end
-      alias :<< :push
+      alias << push
 
       def idx_last
         @buffer.length - 1 - height
@@ -42,7 +41,7 @@ module Ui
       end
 
       def values
-        @buffer[@idx..@idx+height]
+        @buffer[@idx..@idx + height]
       end
     end
   end

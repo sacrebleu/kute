@@ -20,15 +20,15 @@ module Ui
 
       # when did we last refresh
       def render_refresh_time
-        "Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
+        "Refresh: #{model.last_refresh.strftime('%Y-%m-%d %H:%M:%S')}"
       end
 
       # node commands
       def prompt
         s = [
-          "#{color.cyan.bold("b")}ack",
-          "#{color.cyan.bold("l")}ogs",
-          "#{color.cyan.bold("c")}ontainers",
+          "#{color.cyan.bold('b')}ack",
+          "#{color.cyan.bold('l')}ogs",
+          "#{color.cyan.bold('c')}ontainers"
         ].join(' ')
 
         "#{model.pod.metadata.namespace}/#{model.pod.metadata.name}: #{s}> "

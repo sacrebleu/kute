@@ -4,7 +4,6 @@ module Ui
   # layout module
   # paginator because I keep having to reimplement this and keep making bugs
   class Pane
-
     attr_reader :pages, :rows, :color
 
     # generate a new paginator of length data.length and rows h
@@ -65,7 +64,7 @@ module Ui
 
     # apply a filter
     def filter!(&block)
-      @filtered = @data.select { |e| yield(e) } if block_given?
+      @filtered = @data.select(&block) if block_given?
       @filtered = @data unless block_given?
       recalculate!
     end
@@ -106,7 +105,8 @@ module Ui
     end
 
     private
-    def step(&block)
+
+    def step
       @data.map(&:deselect!)
       yield if block_given?
       recalculate!
@@ -141,7 +141,7 @@ module Ui
     end
 
     def first_for_page
-      (@page - 1 ) * rows
+      (@page - 1) * rows
     end
 
     # select the first page

@@ -2,7 +2,6 @@
 module Ui
   module Cards
     class Service
-
       attr_reader :service
 
       def initialize(client)
@@ -25,7 +24,7 @@ module Ui
         reload!
       end
 
-      def refresh(fetch, order=:default)
+      def refresh(fetch, _order = :default)
         reload! if fetch
         @dt = Time.now
       end
@@ -44,12 +43,12 @@ module Ui
 
       def loadbalancer(service)
         s = service.status&.to_h || {}
-        s[:loadBalancer] ? s[:loadBalancer][:ingress]&.map{|l| l[:hostname] }&.join(_lj('\n', 15)) : ''
+        s[:loadBalancer] ? s[:loadBalancer][:ingress]&.map { |l| l[:hostname] }&.join(_lj('\n', 15)) : ''
       end
 
       def ports(w)
         service.spec.ports
-          &.sort {|a,b| a[:name] <=> b[:name] }
+          &.sort { |a, b| a[:name] <=> b[:name] }
           &.map do |p|
             "#{_lj(p[:name], 25)} [#{p[:protocol]}] #{p[:port]} -> #{p[:targetPort]}"
           end
@@ -59,16 +58,16 @@ module Ui
       def render
         w = 11
         out = <<~DONE
-        
+
           #{service.metadata.namespace} / #{color.bold(service.metadata.name)}
           [Type: #{color.cyan(service.spec.type)} - cluster IP: #{service.spec.clusterIP}]
 
-          selector: #{service.spec.selector&.to_h&.map {|k,v| "#{k}: #{color.green(v)}"}&.join(_lj("\n", w))}
+          selector: #{service.spec.selector&.to_h&.map { |k, v| "#{k}: #{color.green(v)}" }&.join(_lj("\n", w))}
 
-          labels:   #{service.metadata.labels&.to_h&.map {|k,v| "#{k}: #{color.cyan(v)}"}&.join(_lj("\n", w))}
-          
+          labels:   #{service.metadata.labels&.to_h&.map { |k, v| "#{k}: #{color.cyan(v)}" }&.join(_lj("\n", w))}
+
           ports:    #{ports(w)}
-          
+
         DONE
 
         if service.spec.type == 'LoadBalancer'

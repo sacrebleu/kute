@@ -7,8 +7,7 @@ module Model
     end
 
     # retrieve node list
-    def pods(node=nil)
-
+    def pods(node = nil)
       res = if node
               @client.get_pods(field_selector: "spec.nodeName=#{node}")
             else
@@ -28,12 +27,14 @@ module Model
           running: p.status.containerStatuses&.select { |e| e.state.running }&.length,
           restarts: p.status.containerStatuses&.collect { |e| e[:restartCount] }&.reduce(:+),
           ports: (p.spec.containers || [])
-                   .map{ |c| "#{c.name} #{(c.ports || [])
-                    .map{|p| "#{p[:protocol]}:#{p[:containerPort]}"}.join(",")}" }
-                   .join(',')
+            .map do |c|
+                   "#{c.name} #{(c.ports || [])
+                    .map { |p| "#{p[:protocol]}:#{p[:containerPort]}" }.join(',')}"
+                 end
+            .join(',')
         }
       end
-      pods.sort_by{|a| [a[:namespace], a[:name]] }
+      pods.sort_by { |a| [a[:namespace], a[:name]] }
     end
 
     def describe(pod, namespace)

@@ -14,7 +14,7 @@ module Model
           name: p.metadata.name,
           labels: p.metadata.labels,
           namespace: p.metadata.namespace,
-          creationTime: Time.parse(p.metadata.creationTimestamp),
+          creationTime: Time.parse(p.metadata.creationTimestamp)
         }
       end
 
@@ -24,7 +24,7 @@ module Model
           name: p.metadata.name,
           labels: p.metadata.labels,
           namespace: p.metadata.namespace,
-          creationTime: Time.parse(p.metadata.creationTimestamp),
+          creationTime: Time.parse(p.metadata.creationTimestamp)
         }
       end
 
@@ -34,7 +34,7 @@ module Model
           name: p.metadata.name,
           labels: p.metadata.labels,
           namespace: p.metadata.namespace,
-          creationTime: Time.parse(p.metadata.creationTimestamp),
+          creationTime: Time.parse(p.metadata.creationTimestamp)
         }
       end
 
@@ -44,11 +44,11 @@ module Model
           name: p.metadata.name,
           labels: p.metadata.labels,
           namespace: p.metadata.namespace,
-          creationTime: Time.parse(p.metadata.creationTimestamp),
+          creationTime: Time.parse(p.metadata.creationTimestamp)
         }
       end
 
-      res.flatten.sort_by{ |a| [a[:namespace], a[:name]] }
+      res.flatten.sort_by { |a| [a[:namespace], a[:name]] }
     end
 
     def describe(ingress, namespace, type)
