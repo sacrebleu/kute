@@ -1,7 +1,6 @@
 module Ui
   module Util
     class Space
-
       def self.memorize(s)
         if s.downcase.end_with?('m')
           demili(s)
@@ -14,29 +13,25 @@ module Ui
 
       def self.demili(s)
         sd = s.downcase
-        if sd.end_with?('m')
-          (sd.scan(/\d+/).first || 0).to_i / 1024
-        end
+        (sd.scan(/\d+/).first || 0).to_i / 1024 if sd.end_with?('m')
       end
 
       def self.binarytohuman(s)
         sd = s.downcase
-        if sd.end_with?('ki')
-          (sd.scan(/\d+/).first || 0).to_i * 1024
-        end
+        (sd.scan(/\d+/).first || 0).to_i * 1024 if sd.end_with?('ki')
       end
 
       def self.humanize(val)
-        suffixes = %w|b kb Mb Gb Tb Pb Eb|
+        suffixes = %w[b kb Mb Gb Tb Pb Eb]
         idx = 0
 
         v = val
         while v > 1023
-          idx +=1
-          v = v / 1024
+          idx += 1
+          v /= 1024
         end
 
-        "%s%s" % [v, suffixes[idx]]
+        format('%s%s', v, suffixes[idx])
       end
     end
   end

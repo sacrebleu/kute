@@ -16,7 +16,7 @@ module Ui
 
       # when did we last refresh
       def render_refresh_time
-        "#{@pattern ? "search: /#{@pattern}/" : ''} page: #{model.index} Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
+        "#{@pattern ? "search: /#{@pattern}/" : ''} page: #{model.index} Refresh: #{model.last_refresh.strftime('%Y-%m-%d %H:%M:%S')}"
       end
 
       # node commands
@@ -25,7 +25,7 @@ module Ui
           "[#{color.cyan.bold('n')}odes]",
           "[#{color.cyan.bold('i')}ngresses]",
           "[#{color.cyan.bold('s')}ervices]",
-          "[#{color.cyan.bold('g')}enerators]",
+          "[#{color.cyan.bold('g')}enerators]"
         ].join(' ')
         "#{s}> "
       end
@@ -46,26 +46,20 @@ module Ui
         super(evt)
 
         # > and p both fetch pods from the selected node
-        if evt.key.name == :left
-          go_nodes
-        end
+        go_nodes if evt.key.name == :left
 
-        if evt.key.name == :right || evt.key.name == :enter || evt.key.name == :return
-          go_map_details(model.selected)
-        end
+        go_map_details(model.selected) if evt.key.name == :right || evt.key.name == :enter || evt.key.name == :return
 
-        if evt.value == '@'
-          model.sort!(:map_name)
-        end
+        model.sort!(:map_name) if evt.value == '@'
 
         if evt.value == '/'
           begin
             deregister
-            @pattern = (reader.read_line "search pattern:").strip
+            @pattern = (reader.read_line 'search pattern:').strip
             model.filter!(@pattern)
             model.select_first!
             register
-          rescue => e
+          rescue StandardError => e
             pp e.backtrace if $settings[:verbose]
             register
           end

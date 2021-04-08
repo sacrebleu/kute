@@ -6,7 +6,6 @@ require 'tty-prompt'
 
 require_relative 'util/duration'
 
-
 module Ui
   class Console
     attr_reader :context, :logger, :reader
@@ -26,7 +25,7 @@ module Ui
         config_maps: Ui::Controller::ConfigMaps.new(self, Ui::Cards::ConfigMaps.new(version_manager)),
         map_details: Ui::Controller::ConfigMapDetails.new(self, Ui::Cards::ConfigMapDetails.new(version_manager)),
         generators: Ui::Controller::Generators.new(self, Ui::Cards::Generators.new(version_manager)),
-        generator_details: Ui::Controller::GeneratorDetails.new(self, Ui::Cards::GeneratorDetails.new(version_manager)),
+        generator_details: Ui::Controller::GeneratorDetails.new(self, Ui::Cards::GeneratorDetails.new(version_manager))
       }
       @selected = :nodes
       @render = nil
@@ -80,7 +79,7 @@ module Ui
       @selected.capitalize
     end
 
-    def select(key,refresh = true)
+    def select(key, refresh = true)
       @cards[@selected]&.deregister
       @selected = @cards[key] ? key : :help
       @cards[@selected]&.register

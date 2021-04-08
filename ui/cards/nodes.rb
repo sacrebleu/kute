@@ -2,7 +2,6 @@
 module Ui
   module Cards
     class Nodes < Base
-
       # models a row in the report
       class Row < Ui::Pane::SelectableRow
         # attributes that don't match a column name won't be rendered
@@ -13,14 +12,14 @@ module Ui
           @name = node[:name]
 
           @color = color
-          dur = (DateTime.now - DateTime.parse(node[:age]))*60*60*24
+          dur = (DateTime.now - DateTime.parse(node[:age])) * 60 * 60 * 24
           @age = Ui::Util::Duration.human(dur)
           @region = node[:region]
           @pods = [node[:pods].to_i, node[:capacity][:pods].to_i,
-                   node[:pods].to_f/node[:capacity][:pods].to_f]
+                   node[:pods].to_f / node[:capacity][:pods].to_f]
           @pod_names = node[:pod_names] # hidden
           @volumes = [node[:volume_count].to_i, node[:capacity][:ebs_volumes].to_i,
-                      node[:volume_count].to_f / node[:capacity][:ebs_volumes].to_f ]
+                      node[:volume_count].to_f / node[:capacity][:ebs_volumes].to_f]
           @status = node[:status]
           @taints = node[:taints]
           @affinity = node_affinity(node)
@@ -36,7 +35,7 @@ module Ui
         end
 
         def any_pods_like?(pattern)
-          @pod_names.any?{|p| /#{pattern}/.match?(p) }
+          @pod_names.any? { |p| /#{pattern}/.match?(p) }
         end
 
         def rejigger(columns)
@@ -69,9 +68,9 @@ module Ui
 
         def name
           if selected?
-            @color.white.bold(@name) + @color.bold.yellow(">")
+            @color.white.bold(@name) + @color.bold.yellow('>')
           else
-            @container_health ? @name : "#{@color.yellow(@name)}#{@color.bold.red("*")}"
+            @container_health ? @name : "#{@color.yellow(@name)}#{@color.bold.red('*')}"
           end
         end
 
@@ -108,16 +107,15 @@ module Ui
 
         # report on node taints
         def taints
-          res = if @taints&.any?{|s| s.start_with?('NodeWithImpaired') }
-                  @color.yellow 'Impaired'
-                elsif @taints&.any?{|s| s.end_with?('PreferNoSchedule') }
-                  @color.cyan 'PrefNoSchedule'
-                elsif @taints&.any?{|s| s.end_with?('NoSchedule') }
-                  @color.red 'NoSchedule'
-                else
-                  ''
-                end
-          res
+          if @taints&.any? { |s| s.start_with?('NodeWithImpaired') }
+            @color.yellow 'Impaired'
+          elsif @taints&.any? { |s| s.end_with?('PreferNoSchedule') }
+            @color.cyan 'PrefNoSchedule'
+          elsif @taints&.any? { |s| s.end_with?('NoSchedule') }
+            @color.red 'NoSchedule'
+          else
+            ''
+          end
         end
 
         # report on any affinity label that's been set
@@ -129,11 +127,11 @@ module Ui
           end
         end
 
-        def threshold(v, thresholds = { red: 90, yellow: 75, bold: 50})
+        def threshold(v, thresholds = { red: 90, yellow: 75, bold: 50 })
           if v > thresholds[:red]
-           @color.bold.on_red v.to_s
+            @color.bold.on_red v.to_s
           elsif v > thresholds[:yellow]
-           @color.bright_yellow v.to_s
+            @color.bright_yellow v.to_s
           elsif v > thresholds[:bold]
             @color.bright_white v.to_s
           else
@@ -174,9 +172,9 @@ module Ui
           @age = ''
           @region = ''
           @pods = [node[:current_pods].to_i, node[:max_pods].to_i,
-                   node[:current_pods].to_f/node[:max_pods].to_f]
+                   node[:current_pods].to_f / node[:max_pods].to_f]
           @volumes = [node[:current_volumes].to_i, node[:max_volumes].to_i,
-                      node[:current_volumes].to_f / node[:max_volumes].to_f ]
+                      node[:current_volumes].to_f / node[:max_volumes].to_f]
           @taints = []
           @affinity = ''
           @version = ''
@@ -226,7 +224,7 @@ module Ui
         @dt = Time.now
       end
 
-      def refresh(fetch=true, order)
+      def refresh(fetch = true, order)
         reload! if fetch
         sort!(order)
 
@@ -239,17 +237,17 @@ module Ui
       # sort nodes by sort function - default is occupancy
       def sort!(method)
         if method == :pods_descending
-          @pane.sort! {|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
+          @pane.sort! { |a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
           @pane.first_row!
         end
 
         if method == :pods_ascending
-          @pane.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
+          @pane.sort! { |a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
           @pane.first_row!
         end
 
         if method == :node_name
-          @pane.sort!{|a, b| a.name <=> b.name }
+          @pane.sort! { |a, b| a.name <=> b.name }
           @pane.first_row!
         end
       end

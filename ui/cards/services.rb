@@ -2,7 +2,6 @@
 module Ui
   module Cards
     class Services < Base
-
       # models a row in the report
       class Row < Ui::Pane::SelectableRow
         # attributes that don't match a column name won't be rendered
@@ -21,7 +20,7 @@ module Ui
 
           @color = color
 
-          dur = (DateTime.now - DateTime.parse(service[:age]))*60*60*24
+          dur = (DateTime.now - DateTime.parse(service[:age])) * 60 * 60 * 24
 
           @age = Ui::Util::Duration.human(dur)
         end
@@ -73,11 +72,11 @@ module Ui
           output = ''
           columns.each do |column|
             m = column.name
-            if m == :name && @selected
-              output << column.render(color.white.bold(@name) + color.bold.yellow(">"))
-            else
-              output << column.render(send(m))
-            end
+            output << if m == :name && @selected
+                        column.render(color.white.bold(@name) + color.bold.yellow('>'))
+                      else
+                        column.render(send(m))
+                      end
           end
           output
         end
@@ -86,7 +85,7 @@ module Ui
       def initialize(client)
         @model = Model::Services.new(client)
         @columns = [
-          [:name,     20, :left],
+          [:name, 20, :left],
           [:namespace, 15, :left],
           # [:app,      15, :left],
           # [:selector, 15, :left],
@@ -104,7 +103,7 @@ module Ui
         @dt = Time.now
       end
 
-      def refresh(fetch=true, order)
+      def refresh(fetch = true, order)
         reload! if fetch
         sort!(order)
 
@@ -117,7 +116,7 @@ module Ui
       # sort nodes by sort function - default is occupancy
       def sort!(method)
         if method == :service_name
-          @pane.sort!{|a, b| a.name <=> b.name }
+          @pane.sort! { |a, b| a.name <=> b.name }
           @pane.first_row!
         end
       end

@@ -2,7 +2,6 @@
 module Ui
   module Cards
     class Ingress
-
       attr_reader :ingress
 
       def initialize(client)
@@ -25,7 +24,7 @@ module Ui
         reload!
       end
 
-      def refresh(fetch, order=:default)
+      def refresh(fetch, _order = :default)
         reload! if fetch
         @dt = Time.now
       end
@@ -46,7 +45,7 @@ module Ui
         out = ''
         ingress.spec.rules.map do |rule|
           entries = rule.to_h.except(:host)
-          entries.map do |proto,route|
+          entries.map do |proto, route|
             route[:paths].map do |path|
               out << "#{proto}://#{rule[:host]}#{path[:path]} -> #{path[:backend][:serviceName]}:#{path[:backend][:servicePort]}"
             end.flatten.join(_lj("\n", w))
@@ -56,18 +55,16 @@ module Ui
 
       def render
         w = 16
-        out = <<~DONE
-          LoadBalancers: #{ingress.status.loadBalancer.ingress&.collect{|k| k[:hostname]}&.join(_lj("\n", w))} 
+        <<~DONE
+          LoadBalancers: #{ingress.status.loadBalancer.ingress&.collect { |k| k[:hostname] }&.join(_lj("\n", w))}
           Status:        #{ingress.status.loadBalancer.ingress ? 'Active' : color.yellow('Inactive')}
 
-          annotations:   #{ingress.metadata.annotations&.to_h&.map {|k,v| "#{k}: #{color.cyan(v)}"}&.join(_lj("\n", w))}
+          annotations:   #{ingress.metadata.annotations&.to_h&.map { |k, v| "#{k}: #{color.cyan(v)}" }&.join(_lj("\n", w))}
 
-          labels:        #{ingress.metadata.labels&.to_h&.map {|k,v| "#{k}: #{color.cyan(v)}"}&.join(_lj("\n", w))}
+          labels:        #{ingress.metadata.labels&.to_h&.map { |k, v| "#{k}: #{color.cyan(v)}" }&.join(_lj("\n", w))}
 
           rules:         #{rules(w)}
         DONE
-
-        out
       end
     end
   end

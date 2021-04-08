@@ -1,7 +1,6 @@
 # manages API differences across kubernetes versions
 
 class VersionManager
-
   attr_reader :clients, :version, :auth_options, :endpoint, :mediator
 
   def initialize(version, endpoint, auth_options)
@@ -34,11 +33,11 @@ class VersionManager
     k = (api == :default ? endpoint : "#{endpoint}/apis/#{api}")
     kv = "#{k}/#{version}"
     clients[kv] ||= Kubeclient::Client.new(
-        k,
-        version,
-        auth_options: auth_options,
-        ssl_options: { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
-      )
+      k,
+      version,
+      auth_options: auth_options,
+      ssl_options: { verify_ssl: OpenSSL::SSL::VERIFY_NONE }
+    )
   end
 
   # delegates
@@ -61,12 +60,12 @@ class VersionManager
     end
   end
 
-  def respond_to_missing?(method_name, include_private = false)
+  def respond_to_missing?(_method_name, _include_private = false)
     true
   end
 
-  class Kubernetes # 1.14+
-
+  # 1.14+
+  class Kubernetes
     def extensions
       @extensions ||= []
     end
@@ -91,10 +90,9 @@ class VersionManager
       ]
     end
 
-    def respond_to_missing?(method_name, include_private = false)
+    def respond_to_missing?(_method_name, _include_private = false)
       true
     end
-
   end
 
   class Kubernets13 < Kubernetes

@@ -31,13 +31,13 @@ class RingBuffer
       value
     end
   end
-  alias :<< :push
+  alias << push
 
   def [](idx)
     @buffer[idx]
   end
 
-  def values(from=0, to=-1)
+  def values(from = 0, to = -1)
     i = from < 0 || from > @buffer.length ? 0 : from
     j = to > (@buffer.length - 1) ? @buffer.length - 1 : to
     @buffer[i..j]
@@ -50,9 +50,7 @@ class RingBuffer
   def flush
     values = []
     @mutex.synchronize do
-      while not_empty?
-        values << remove_element
-      end
+      values << remove_element while not_empty?
     end
     values
   end
@@ -67,7 +65,9 @@ class RingBuffer
 
   def remove_element
     return nil if empty?
-    value, @buffer[@start] = @buffer[@start], nil
+
+    value = @buffer[@start]
+    @buffer[@start] = nil
     @start = (@start + 1) % @size
     @count -= 1
     value

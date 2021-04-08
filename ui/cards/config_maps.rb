@@ -2,7 +2,6 @@
 module Ui
   module Cards
     class ConfigMaps < Base
-
       # models a row in the report
       class Row < Ui::Pane::SelectableRow
         # attributes that don't match a column name won't be rendered
@@ -13,7 +12,7 @@ module Ui
           @color = color
           @name = map[:name]
           @namespace = map[:namespace]
-          l = map[:labels]&.to_h&.collect{|k,v| "#{k}: #{v}"}&.join(',')
+          l = map[:labels]&.to_h&.collect { |k, v| "#{k}: #{v}" }&.join(',')
           @labels = (l && l.length > 60 ? l[0..57] + '...' : l)
           @data = map[:data]
           @age  = Util::Duration.human(Time.now.to_i - map[:creationTime].to_i)
@@ -31,11 +30,11 @@ module Ui
           output = ''
           columns.each do |column|
             m = column.name
-            if m == :name && @selected
-              output << column.render(color.white.bold(@name) + color.bold.yellow(">"))
-            else
-              output << column.render(send(m))
-            end
+            output << if m == :name && @selected
+                        column.render(color.white.bold(@name) + color.bold.yellow('>'))
+                      else
+                        column.render(send(m))
+                      end
           end
           output
         end
@@ -60,7 +59,7 @@ module Ui
 
       # set the list of pods to render
 
-      def refresh(fetch, order=:default)
+      def refresh(fetch, _order = :default)
         reload! if fetch
         @pane.update!(@configmaps) if fetch
         @pane.first_row! if fetch
@@ -103,9 +102,7 @@ module Ui
 
       # sort nodes by sort function - default is occupancy
       def sort!(method)
-        if method == :name
-          @pane.sort_by{|map| [map[:namespace], map[:name]]}
-        end
+        @pane.sort_by { |map| [map[:namespace], map[:name]] } if method == :name
       end
 
       def filter!(pattern)

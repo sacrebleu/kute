@@ -13,12 +13,12 @@ module Model
           name: p.metadata.name,
           namespace: p.metadata.namespace,
           creationTime: p.metadata.creationTimestamp,
-          ingress:p.metadata.annotations.send("kubernetes.io/ingress.class"),
+          ingress: p.metadata.annotations.send('kubernetes.io/ingress.class'),
           status: p.status.loadBalancer.ingress ? :active : :inactive,
           loadbalancer: p.status.to_h&.dig(:loadBalancer, :ingress)&.first&.[](:hostname)
         }
       end
-      ingresses.sort_by{ |a| [a[:namespace], a[:name]] }
+      ingresses.sort_by { |a| [a[:namespace], a[:name]] }
     end
 
     def describe(ingress, namespace)

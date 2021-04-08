@@ -2,7 +2,6 @@
 module Ui
   module Cards
     class ConfigMapDetails
-
       attr_reader :map
 
       def initialize(client)
@@ -34,7 +33,7 @@ module Ui
         @height ||= (TTY::Screen.height - 4)
       end
 
-      def refresh(fetch, order=:default)
+      def refresh(fetch, _order = :default)
         reload! if fetch
         @dt = Time.now
       end
@@ -44,7 +43,7 @@ module Ui
         @map = @model.describe(@name, @namespace)
         # pp @map
 
-        data = ["No Data in this configmap"]
+        data = ['No Data in this configmap']
         data = map.data.to_h&.values&.first&.lines if map.data
         @labels = map.metadata.labels.to_h
 
@@ -53,17 +52,15 @@ module Ui
       end
 
       def render
-
-        s = <<~DATA
-        #{color.cyan(@namespace)}/#{color.blue.bold(@name)}: [ConfigMap]
-        labels:
-          #{@labels.map{|k,v| "#{k}=#{v}" }.join("\n  ") }
-        #{"-" * (TTY::Screen.width - 5)}
-        #{@pane.values.join}
+        <<~DATA
+          #{color.cyan(@namespace)}/#{color.blue.bold(@name)}: [ConfigMap]
+          labels:
+            #{@labels.map { |k, v| "#{k}=#{v}" }.join("\n  ")}
+          #{'-' * (TTY::Screen.width - 5)}
+          #{@pane.values.join}
         DATA
         # should contain annotations, a divider, then the config map body in the remaining space.
         # pp s
-        s
       end
 
       # next page

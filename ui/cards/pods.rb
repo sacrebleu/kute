@@ -2,7 +2,6 @@
 module Ui
   module Cards
     class Pods < Base
-
       # models a row in the report
       class Row < Ui::Pane::SelectableRow
         # attributes that don't match a column name won't be rendered
@@ -25,8 +24,11 @@ module Ui
         end
 
         def containers(pod)
-          (pod[:running] || 0) < (pod[:containers] || 0) ?
-            "#{color.yellow(pod[:running])}/#{pod[:containers]}" : "#{pod[:running]}/#{pod[:containers]}"
+          if (pod[:running] || 0) < (pod[:containers] || 0)
+            "#{color.yellow(pod[:running])}/#{pod[:containers]}"
+          else
+            "#{pod[:running]}/#{pod[:containers]}"
+          end
         end
 
         def rejigger(columns)
@@ -42,7 +44,7 @@ module Ui
         end
 
         def status
-          @con_status ? "Ok" : color.yellow("*")
+          @con_status ? 'Ok' : color.yellow('*')
         end
 
         # layout columns
@@ -50,11 +52,11 @@ module Ui
           output = ''
           columns.each do |column|
             m = column.name
-            if m == :name && @selected
-              output << column.render(color.white.bold(@name) + color.bold.yellow(">"))
-            else
-              output << column.render(send(m))
-            end
+            output << if m == :name && @selected
+                        column.render(color.white.bold(@name) + color.bold.yellow('>'))
+                      else
+                        column.render(send(m))
+                      end
           end
           output
         end
@@ -65,7 +67,7 @@ module Ui
       def initialize(client)
         @model = Model::Pods.new(client)
         @columns = [
-          [:name,     55, :left],
+          [:name, 55, :left],
           [:namespace, 20, :left],
           [:con, 7, :left],
           [:vol, 5, :left],
@@ -91,7 +93,7 @@ module Ui
         refresh(true)
       end
 
-      def refresh(fetch, order=:default)
+      def refresh(fetch, _order = :default)
         reload! if fetch
         @pane.update!(@pods) if fetch
         @pane.first_row! if fetch
@@ -134,17 +136,11 @@ module Ui
 
       # sort nodes by sort function - default is occupancy
       def sort!(method)
-        if method == :containers_descending
-          @pane.sort! {|a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio }
-        end
+        @pane.sort! { |a, b| b.pod_occupancy_ratio <=> a.pod_occupancy_ratio } if method == :containers_descending
 
-        if method == :containers_ascending
-          @pane.sort!{|a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio }
-        end
+        @pane.sort! { |a, b| a.pod_occupancy_ratio <=> b.pod_occupancy_ratio } if method == :containers_ascending
 
-        if method == :node_name
-          @pane.sort!{|a, b| a.name <=> b.name }
-        end
+        @pane.sort! { |a, b| a.name <=> b.name } if method == :node_name
       end
 
       def filter!(pattern)

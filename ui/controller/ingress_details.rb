@@ -20,13 +20,13 @@ module Ui
 
       # when did we last refresh
       def render_refresh_time
-        "Refresh: #{model.last_refresh.strftime("%Y-%m-%d %H:%M:%S")}"
+        "Refresh: #{model.last_refresh.strftime('%Y-%m-%d %H:%M:%S')}"
       end
 
       # node commands
       def prompt
         s = [
-          "#{color.cyan.bold("b")}ack",
+          "#{color.cyan.bold('b')}ack"
         ].join(' ')
 
         "#{model.ingress.metadata.namespace}/#{model.ingress.metadata.name}: #{s}> "
@@ -43,9 +43,7 @@ module Ui
         super(evt)
 
         # > and p both fetch pods from the selected node
-        if evt.key.name == :left || evt.value == 'b' || evt.value == 'i'
-          go_ingresses(model.ingress)
-        end
+        go_ingresses(model.ingress) if evt.key.name == :left || evt.value == 'b' || evt.value == 'i'
 
         if evt.value == 'r' || evt.key.name == :enter
           model.reload!

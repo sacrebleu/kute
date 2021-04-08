@@ -3,14 +3,13 @@
 #
 module Model
   class Nodes
-
-    def initialize(client, opts = {})
+    def initialize(client, _opts = {})
       @client = client
     end
 
     def node_conditions(conds)
       res = {}
-      conds.map{ |k| res[k.type] = k.status  }
+      conds.map { |k| res[k.type] = k.status }
       res
     end
 
@@ -19,12 +18,14 @@ module Model
       pods = {}
 
       # for each pod, get its container statuses as well
-      @client.get_pods(field_selector: "status.phase=Running").map do |p|
-        s = (p.status.containerStatuses.select { |e| e.state.running || e.state.terminated&.exitCode == 0 }.length == p.spec.containers.length)
+      @client.get_pods(field_selector: 'status.phase=Running').map do |p|
+        s = (p.status.containerStatuses.select do |e|
+               e.state.running || e.state.terminated&.exitCode == 0
+             end.length == p.spec.containers.length)
 
         # pp [p.status.containerStatuses.select { |e| e.state.running }.length, p.spec.containers.length, s]
 
-        pods[p.spec.nodeName] ||=  {count: 0, status: true}
+        pods[p.spec.nodeName] ||= { count: 0, status: true }
         pods[p.spec.nodeName][:pod_names] ||= []
         pods[p.spec.nodeName][:pod_names] << p.metadata.name
         pods[p.spec.nodeName][:count] += 1
@@ -41,7 +42,7 @@ module Model
           region: labels[:"failure-domain.beta.kubernetes.io/zone"],
           kubeletVersion: node.status[:nodeInfo][:kubeletVersion],
           labels: labels,
-          taints: node.spec.taints&.map {|e| "#{e.key}=#{e.value}:#{e.effect}"},
+          taints: node.spec.taints&.map { |e| "#{e.key}=#{e.value}:#{e.effect}" },
           capacity: {
             ebs_volumes: node.status[:capacity][:"attachable-volumes-aws-ebs"],
             cpus: node.status[:capacity][:cpu],
@@ -74,22 +75,24 @@ module Model
 
       # for each pod, get its container statuses as well
       @client.get_pods(field_selector: "spec.nodeName=#{name}").map do |p|
-        s = (p.status.containerStatuses.select { |e| e.state.running || e.state.terminated&.exitCode == 0 }.length == p.spec.containers.length)
+        s = (p.status.containerStatuses.select do |e|
+               e.state.running || e.state.terminated&.exitCode == 0
+             end.length == p.spec.containers.length)
 
-        pods[p.spec.nodeName] ||=  {count: 0, status: true}
+        pods[p.spec.nodeName] ||= { count: 0, status: true }
         pods[p.spec.nodeName][:pod_names] ||= []
         pods[p.spec.nodeName][:pod_names] << p.metadata.name
         pods[p.spec.nodeName][:count] += 1
         pods[p.spec.nodeName][:status] = pods[p.spec.nodeName][:status] && s
       end
 
-      res = {
+      {
         name: node.metadata.name,
         age: node.metadata.creationTimestamp,
         region: labels[:"failure-domain.beta.kubernetes.io/zone"],
         kubeletVersion: node.status[:nodeInfo][:kubeletVersion],
         labels: labels,
-        taints: node.spec.taints&.map {|e| "#{e.key}=#{e.value}:#{e.effect}"},
+        taints: node.spec.taints&.map { |e| "#{e.key}=#{e.value}:#{e.effect}" },
         capacity: {
           ebs_volumes: node.status[:capacity][:"attachable-volumes-aws-ebs"],
           cpus: node.status[:capacity][:cpu],
@@ -110,8 +113,6 @@ module Model
         pod_names: pods[node.metadata.name][:pod_names],
         container_health: pods[node.metadata.name][:status]
       }
-
-      res
     end
   end
 end

@@ -1,9 +1,8 @@
 module Ui
   class LogPane
-
     attr_reader :width, :height
 
-    def initialize(tail=100, w = TTY::Screen.width, h=TTY::Screen.height - 3)
+    def initialize(tail = 100, w = TTY::Screen.width, h = TTY::Screen.height - 3)
       @width = w
       @height = h
       @tail = tail
@@ -19,7 +18,7 @@ module Ui
     def push(str)
       @buffer << str
     end
-    alias :<< :push
+    alias << push
 
     def last
       @idx = @tail - 1
@@ -50,10 +49,11 @@ module Ui
     end
 
     private
+
     def back
       idx = @idx
       n = 0
-      while n < height && idx > 0 do
+      while n < height && idx > 0
         n += ((@buffer[idx]&.length || 0) / width) + 1
         idx -= 1
       end
@@ -63,7 +63,7 @@ module Ui
     def forward
       idx = @idx
       n = 0
-      while n < height && idx < @tail do
+      while n < height && idx < @tail
         n += ((@buffer[idx]&.length || 0) / width) + 1
         idx += 1
       end

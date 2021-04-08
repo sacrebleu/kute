@@ -5,7 +5,7 @@ class Log
   end
 
   def self.dump(*s)
-    puts s.join(" ")
+    puts s.join(' ')
   end
 
   def self.error(msg)
