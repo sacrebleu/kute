@@ -113,6 +113,6 @@ rescue Aws::EKS::Errors::ResourceNotFoundException => e
   puts "Role: #{Aws::STS::Client.new(credentials: credentials).get_caller_identity["arn"]}"
   puts "EKS cluster #{cluster_name} not found in region #{context['region']}."
   puts "Context used:"
-  Logger.dump(context)
+  pp context
 end
 

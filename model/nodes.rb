@@ -50,17 +50,17 @@ module Model
             pods: node.status[:capacity][:pods]
           },
           available_capacity: {
-            ephemeral: node.status[:allocatable][:"ephemeral-storage"],
-            memory: node.status[:allocatable][:memory],
-            ebs_volumes: node.status[:capacity][:"attachable-volumes-aws-ebs"].to_i - v_use,
-            pods: node.status[:capacity][:pods].to_i - pods[node.metadata.name][:count]
+            ephemeral: node.status&.[](:allocatable)&.[](:"ephemeral-storage"),
+            memory: node.status&.[](:allocatable)&.[](:memory),
+            ebs_volumes: (node.status&.[](:capacity)&.[](:"attachable-volumes-aws-ebs") || 0).to_i - v_use,
+            pods: (node.status&.[](:capacity)&.[](:pods) || 0).to_i - (pods&.[](node.metadata.name)&.[](:count) || 0)
           },
           status: node_conditions(node.status.conditions),
           volumes: node.volumesInUse,
           volume_count: v_use,
-          pods: pods[node.metadata.name][:count],
-          pod_names: pods[node.metadata.name][:pod_names],
-          container_health: pods[node.metadata.name][:status]
+          pods: pods[node.metadata.name]&.[](:count) || 0,
+          pod_names: pods[node.metadata.name]&.[](:pod_names),
+          container_health: pods[node.metadata.name]&.[](:status)
         }
       end
     end

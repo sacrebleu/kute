@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+`aaa`# frozen_string_literal: true
 source 'https://rubygems.org'
 
 ruby '~> 2.5' # support all 2.5
