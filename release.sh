@@ -17,6 +17,8 @@ sed -i "3s/version.*$/version $LREV/" ReadMe.md
 
 echo Bumped version number in ReadMe.md
 
+git add ReadMe.md
+
 git commit -m "release $LREV - commit and push to master"
 
 git push origin master
