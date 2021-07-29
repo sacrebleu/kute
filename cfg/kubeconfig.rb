@@ -11,29 +11,28 @@ class KubeConfig
 
   def self.current_context
     s = YAML.load_file path
+    # determine the current context and region
+    context = YAML.load_file(path)
+    current = context['current-context']
+    current_context = context['contexts'].select {|c| c['name'] == current }
+    cluster_arn = current_context.first['context']['cluster']
+    server = context['clusters'].select {|c| c['name'] == cluster_arn }.first['cluster']['server']
+    region = cluster_arn.split(':')[3]
+
+    puts 'Context:  %s' % context['current-context']
+    puts 'EKS ARN:  %s' % cluster_arn
+    puts 'Endpoint: %s' % server
+    puts 'Region:   %s' % region
 
     current_context = s['current-context']
-    context = context(current_context, s['contexts'])
-    # s['contexts'].select {|ctx| ctx['name'] == current_context }.first
+    raise 'No Current context set' unless current_context
 
-    cl = s['clusters'].map do |s|
-      {
-        'cluster_name' => s['name'],
-        'server' => s['cluster']['server'],
-        'region' => eks_region(s['cluster']['server'])
-      }
-    end.select { |s| s['cluster_name'] == context['context']['cluster'] }.first
-
-    cl.merge(context)
-  end
-
-  # use regex to extract the region from the server url
-  def self.eks_region(s)
-    s.match(/\w+-\w+-\d/).to_s if s.end_with?('.eks.amazonaws.com')
-  end
-
-  def self.context(desired_context, contexts)
-    # if name looks like an arn, check for a context with the same ARN, othewise try the context name
-    contexts.select { |c| c['name'].split('/').last == desired_context.split('/').last }.first
+    {
+      region: region,
+      name: current,
+      server: server,
+      cluster_arn: cluster_arn,
+      cluster_name: cluster_arn.split('/').last
+    }
   end
 end

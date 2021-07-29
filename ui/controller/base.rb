@@ -4,12 +4,13 @@ module Ui
   module Controller
     # base ui class for rendering
     class Base
-      attr_reader :reader, :app
+      attr_reader :reader, :app, :context
 
       def initialize(console)
         @app = console
         @buffer = ''
         @reader = console.reader
+        @context = console.context
       end
 
       def color
@@ -28,7 +29,7 @@ module Ui
       end
 
       def spin_start
-        @spinner = TTY::Spinner.new("kute-#{VERSION}> [#{color.green($settings[:profile])}] #{color.cyan(@app.context['name'])} :spinner ",
+        @spinner = TTY::Spinner.new("kute-#{VERSION}> [#{color.green(context.profile)}] #{color.cyan(@app.context.name)} :spinner ",
                                     hide_cursor: true, clear: false, success_mark: '')
         @spinner.auto_spin
       end
@@ -98,7 +99,7 @@ module Ui
         rescue StandardError => e
           spin_stop
           puts e.message
-          puts e.backtrace.join("\n") if $settings[:verbose]
+          puts e.backtrace.join("\n") if context.verbose
           raise e
         end
 

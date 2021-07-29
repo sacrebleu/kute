@@ -3,14 +3,14 @@
 class InstanceMapper
   attr_reader :cloudwatch, :cluster_name, :starttime, :endtime, :period
 
-  def initialize(credentials, cluster_name, settings)
-    @cloudwatch ||= Aws::CloudWatch::Client.new(credentials: credentials)
-    @cluster_name = cluster_name
+  def initialize(credentials, settings)
+    # @cloudwatch ||= Aws::CloudWatch::Client.new(credentials: credentials)
+    @cluster_name = settings.cluster_name
     @starttime = Time.now - 120
     @endtime   = Time.now
-    @enabled = settings[:cloudwatch]
+    @enabled = settings.cloudwatch
     @period = 60
-    @instances = load if settings[:cloudwatch]
+    # @instances = load if settings[:cloudwatch]
   end
 
   def instances

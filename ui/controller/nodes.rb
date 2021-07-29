@@ -74,7 +74,7 @@ module Ui
             model.select_first!
             register
           rescue StandardError => e
-            pp e.backtrace
+            Log.error(e.backtrace)
             register
           end
         end

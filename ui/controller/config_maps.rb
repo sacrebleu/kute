@@ -60,7 +60,7 @@ module Ui
             model.select_first!
             register
           rescue StandardError => e
-            pp e.backtrace if $settings[:verbose]
+            Log.error(e.backtrace)
             register
           end
         end
