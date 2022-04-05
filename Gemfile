@@ -11,7 +11,7 @@ gem 'aws-sdk-ec2', '~> 1.112'
 gem 'aws-sdk-eks', '~> 1.9'
 gem 'aws-sdk-iam', '~> 1.16'
 
-gem 'kubeclient', '~> 4.7'
+gem 'kubeclient', '~> 4.9'
 
 gem 'colorize',   '~> 0.8'
 
